@@ -17,9 +17,11 @@ function MissionHelper:hookShowMission(...)
     missionPage.Board:ShowHealthValues()
 
     local board = CMH.Board:new(missionPage)
-    MissionHelper.missionHelperFrame:Show()
+    MissionHelper.missionHelperFrame.resultHeader.text:SetText('')
+    MissionHelper.missionHelperFrame.resultInfo.text:SetText('')
     CMH.Board.CombatLog = {}
     CMH.Board.HiddenCombatLog = {}
+    MissionHelper.missionHelperFrame:Show()
     board:fight()
 
     local combatLogMessageFrame = MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame
@@ -37,6 +39,8 @@ function MissionHelper:hookShowMission(...)
                     0))
 
     MissionHelper.missionHelperFrame.board = board
+    board.CombatLog = CMH.Board.CombatLog
+    board.HiddenCombatLog = CMH.Board.HiddenCombatLog
 
     --[[ TODO: board after fight
         HP after fight = CovenantMissionFrame.MissionComplete.Board.framesByBoardIndex.HealthBar.health
