@@ -5,7 +5,7 @@ local EffectTypeEnum = CMH.DataTables.EffectTypeEnum
 function Unit:new(blizzardUnitInfo)
     local newObj = {
         -- use for unusual attack only, blizz dont store combatantID in mission's tables
-        ID = blizzardUnitInfo.garrFollowerID and blizzardUnitInfo.garrFollowerID or blizzardUnitInfo.portraitFileDataID,
+        ID = blizzardUnitInfo.garrFollowerID ~= nil and blizzardUnitInfo.garrFollowerID or blizzardUnitInfo.portraitFileDataID,
         name = blizzardUnitInfo.name,
         maxHealth = blizzardUnitInfo.maxHealth,
         currentHealth = blizzardUnitInfo.health,
