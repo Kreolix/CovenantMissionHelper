@@ -69,7 +69,11 @@ end
 
 local function editDefaultFrame(...)
     CovenantMissionFrame:ClearAllPoints()
-    CovenantMissionFrame:SetPoint("CENTER", UIParent, "CENTER", -300, 100)
+    CovenantMissionFrame:SetPoint("CENTER", UIParent, "CENTER", -300, 0)
+    if CovenantMissionFrame:GetLeft() < 10 then
+        CovenantMissionFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT",
+                10 * CovenantMissionFrame:GetEffectiveScale(), CovenantMissionFrame:GetBottom())
+    end
 end
 
 local function createMissionHelperFrame(...)
@@ -78,7 +82,8 @@ local function createMissionHelperFrame(...)
     local frame  = CreateFrame("Frame", "missionHelperFrame", _G["CovenantMissionFrame"], "CovenantMissionBaseFrameTemplate") -- GarrisonUITemplate/BasicFrameTemplate
     frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT")
     frame:SetClampedToScreen(true)
-    frame:SetSize(700, CovenantMissionFrame:GetHeight())
+    local mainFrameWidth = math.min(GetScreenWidth() * UIParent:GetEffectiveScale() - (CovenantMissionFrame:GetRight() * CovenantMissionFrame:GetEffectiveScale()) - 10, 500)
+    frame:SetSize(mainFrameWidth, CovenantMissionFrame:GetHeight())
     frame:EnableMouse(true)
     frame:EnableMouseWheel(true)
     frame.BaseFrameTopLeft:Hide()
@@ -101,7 +106,7 @@ local function createMissionHelperFrame(...)
 
     local resultInfo = CreateFrame("Frame", nil, frame, "CovenantMissionBaseFrameTemplate")
     frame.resultInfo = resultInfo
-    resultInfo:SetSize(frame:GetWidth() - 40, 120)
+    resultInfo:SetSize(frame:GetWidth() - 40, 160)
     resultInfo:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -60)
     resultInfo.BaseFrameTopLeft:Hide()
     resultInfo.BaseFrameTopRight:Hide()
@@ -112,10 +117,10 @@ local function createMissionHelperFrame(...)
     resultInfo.RaisedFrameEdges.BaseFrameBottomLeftCorner:Hide()
     resultInfo.RaisedFrameEdges.BaseFrameBottomRightCorner:Hide()
     resultInfo.text = resultInfo:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    resultInfo.text:SetSize(resultInfo:GetWidth() - 20 , resultInfo:GetHeight() - 20)
-    resultInfo.text:SetPoint("TOPLEFT", 20, -10)
+    resultInfo.text:SetSize(resultInfo:GetWidth() - 40 , resultInfo:GetHeight() - 20)
+    resultInfo.text:SetPoint("TOPLEFT", 20, -20)
     resultInfo.text:SetJustifyH("LEFT")
-    resultHeader.text:SetJustifyV("TOP")
+    resultInfo.text:SetJustifyV("TOP")
 
     --frame:SetFrameStrata("FULLSCREEN_DIALOG")
     --[[
@@ -135,7 +140,7 @@ local function createMissionHelperFrame(...)
 
     local combatLogFrame = CreateFrame("Frame", "missionHelperCombatLogFrame", frame, "CovenantMissionBaseFrameTemplate")
     combatLogFrame:SetPoint("TOPLEFT", resultInfo, "BOTTOMLEFT", 0, -10)
-    combatLogFrame:SetSize(frame:GetWidth() - 40, frame:GetHeight() - 220)
+    combatLogFrame:SetSize(frame:GetWidth() - 40, frame:GetHeight() - 260)
     --combatLogFrame.BaseFrameBackground:SetAtlas('ClassHall_StoneFrame-BackgroundTile', false)
     combatLogFrame.BaseFrameBackground:SetAtlas('adventures-missions-bg-01', false)
     combatLogFrame.BaseFrameTopLeft:Hide()
@@ -151,7 +156,7 @@ local function createMissionHelperFrame(...)
     -- ScrollingMessageFrame
     local messageFrame = CreateFrame("ScrollingMessageFrame", "missionHelperMessageFrame", combatLogFrame)
     messageFrame:SetFontObject(GameFontNormal)
-    messageFrame:SetSize(frame:GetWidth() - 80, frame:GetHeight() - 260)
+    messageFrame:SetSize(frame:GetWidth() - 100, frame:GetHeight() - 300)
     messageFrame:SetPoint("TOPLEFT", 20, -20)
     --messageFrame:SetTextColor(1, 1, 1, 1) -- default color
     messageFrame:SetJustifyH("LEFT")
@@ -168,7 +173,7 @@ local function createMissionHelperFrame(...)
     -------------------------------------------------------------------------------
     local scrollBar = CreateFrame("Slider", "missionHelperScrollBar", combatLogFrame, "OribosScrollBarTemplate")
     scrollBar:SetPoint("TOPRIGHT", combatLogFrame, "TOPRIGHT", -10, -30)
-    scrollBar:SetSize(10, frame:GetHeight() - 280)
+    scrollBar:SetSize(10, frame:GetHeight() - 320)
     scrollBar:SetFrameLevel(combatLogFrame:GetFrameLevel() + 1)
     scrollBar:SetMinMaxValues(0, 100)
     scrollBar:SetValueStep(5)
