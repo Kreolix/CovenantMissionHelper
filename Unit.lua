@@ -14,6 +14,7 @@ function Unit:new(blizzardUnitInfo)
         role = blizzardUnitInfo.role,
         tauntedBy = nil,
         untargetable = false,
+        reflect = 0,
         buffs = {}
     }
 
@@ -108,6 +109,8 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
         targetUnit.tauntedBy = self.boardIndex
     elseif effect.Effect == EffectTypeEnum.Untargetable then
         targetUnit.untargetable = true
+    elseif effect.Effect == EffectTypeEnum.Reflect or effect.Effect == EffectTypeEnum.Reflect_2 then
+        targetUnit.reflect = effectBaseValue
     end
 
     -- extra initial period
@@ -117,22 +120,33 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
 end
 
 function Unit:getDamageMultiplier(targetUnit)
-    local result = 1
+    local negative_value = 0
+    local positive_value = 1
     for _, buff in pairs(self.buffs) do
         if buff.Effect == EffectTypeEnum.DamageDealtMultiplier or buff.Effect == EffectTypeEnum.DamageDealtMultiplier_2 then
             CMH:debug_log('self buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            result = result + buff.baseValue
+            if buff.baseValue < 0 then
+                negative_value = negative_value + buff.baseValue
+            else
+                positive_value = positive_value + buff.baseValue
+            end
         end
     end
 
     for _, buff in pairs(targetUnit.buffs) do
         if buff.Effect == EffectTypeEnum.DamageTakenMultiplier or buff.Effect == EffectTypeEnum.DamageTakenMultiplier_2 then
             CMH:debug_log('target buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            result = result + buff.baseValue
+            if buff.baseValue < 0 then
+                negative_value = negative_value + buff.baseValue
+            else
+                positive_value = positive_value + buff.baseValue
+            end
         end
     end
+
+    local result = (1 + negative_value) * positive_value
     if result ~= 1 then CMH:debug_log('damage multiplier = ' .. result) end
-    return result
+    return math.max(result, 0)
 end
 
 function Unit:getAdditionalDamage(targetUnit)
@@ -161,6 +175,7 @@ function Unit:castSpellEffect(targetUnit, effect, duration, name)
         local color = (effect.ID == 17 or effect.ID == 21) and '00FFFFFF' or '0066CCFF'
         CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
                 color, self.name, 'attack', targetUnit.name, damage, oldHP, targetUnit.currentHealth))
+        targetUnit:dealReflectDamage(self)
 
     -- heal
     elseif effect.Effect == EffectTypeEnum.Heal or effect.Effect == EffectTypeEnum.Heal_2 then
@@ -183,6 +198,17 @@ function Unit:castSpellEffect(targetUnit, effect, duration, name)
         self:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
     end
 
+end
+
+function Unit:dealReflectDamage(targetUnit)
+    if self.reflect == 0 then return end
+
+    local damage = math.max(math.floor(self:getDamageMultiplier(targetUnit) * (self.reflect + self:getAdditionalDamage(targetUnit))), 0)
+    local oldHP = targetUnit.currentHealth
+    targetUnit.currentHealth = math.max(0, targetUnit.currentHealth - damage)
+    local color = '0066CCFF'
+    CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
+            color, self.name, 'reflect damage to', targetUnit.name, damage, oldHP, targetUnit.currentHealth))
 end
 
 function Unit:getAvailableSpells()
@@ -230,6 +256,8 @@ function Unit:manageBuffs(sourceUnit)
                 self.tauntedBy = nil
             elseif buff.Effect == EffectTypeEnum.Untargetable then
                 self.untargetable = false
+            elseif buff.Effect == EffectTypeEnum.Reflect or buff.Effect == EffectTypeEnum.Reflect_2 then
+                self.reflect = 0
             end
         else
             i = i + 1

@@ -262,7 +262,7 @@ local function notImplemented(sourceIndex, targetType, boardUnits, mainTarget)
 end
 
 local function getRandomEnemy(sourceIndex, targetType, boardUnits, mainTarget)
-    if mainTarget ~= nil then return mainTarget end
+    if mainTarget ~= nil then return {mainTarget} end
     local targets = {}
     for i, v in ipairs(boardUnits) do
         if (sourceIndex <= 4 and i > 4 and v == true) or (sourceIndex > 4 and i <= 4 and v == true) then table.insert(targets, i) end
@@ -273,7 +273,6 @@ local function getRandomEnemy(sourceIndex, targetType, boardUnits, mainTarget)
 end
 
 local function getRandomAlly(sourceIndex, targetType, boardUnits, mainTarget)
-    if mainTarget ~= nil then return mainTarget end
     local targets = {}
     for i, v in ipairs(boardUnits) do
         if (sourceIndex <= 4 and i <= 4 and v == true) or (sourceIndex > 4 and i > 4 and v == true) then table.insert(targets, i) end
