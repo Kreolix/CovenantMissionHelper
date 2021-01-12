@@ -109,7 +109,7 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
         targetUnit.tauntedBy = self.boardIndex
     elseif effect.Effect == EffectTypeEnum.Untargetable then
         targetUnit.untargetable = true
-    elseif effect.Effect == EffectTypeEnum.Reflect or EffectTypeEnum.Reflect_2 then
+    elseif effect.Effect == EffectTypeEnum.Reflect or effect.Effect == EffectTypeEnum.Reflect_2 then
         targetUnit.reflect = effectBaseValue
     end
 
@@ -120,22 +120,33 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
 end
 
 function Unit:getDamageMultiplier(targetUnit)
-    local result = 1
+    local negative_value = 0
+    local positive_value = 1
     for _, buff in pairs(self.buffs) do
         if buff.Effect == EffectTypeEnum.DamageDealtMultiplier or buff.Effect == EffectTypeEnum.DamageDealtMultiplier_2 then
             CMH:debug_log('self buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            result = result + buff.baseValue
+            if buff.baseValue < 0 then
+                negative_value = negative_value + buff.baseValue
+            else
+                positive_value = positive_value + buff.baseValue
+            end
         end
     end
 
     for _, buff in pairs(targetUnit.buffs) do
         if buff.Effect == EffectTypeEnum.DamageTakenMultiplier or buff.Effect == EffectTypeEnum.DamageTakenMultiplier_2 then
             CMH:debug_log('target buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            result = result + buff.baseValue
+            if buff.baseValue < 0 then
+                negative_value = negative_value + buff.baseValue
+            else
+                positive_value = positive_value + buff.baseValue
+            end
         end
     end
+
+    local result = (1 + negative_value) * positive_value
     if result ~= 1 then CMH:debug_log('damage multiplier = ' .. result) end
-    return result
+    return math.max(result, 0)
 end
 
 function Unit:getAdditionalDamage(targetUnit)
@@ -197,7 +208,7 @@ function Unit:dealReflectDamage(targetUnit)
     targetUnit.currentHealth = math.max(0, targetUnit.currentHealth - damage)
     local color = '0066CCFF'
     CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
-            color, self.name, 'attack', targetUnit.name, damage, oldHP, targetUnit.currentHealth))
+            color, self.name, 'reflect damage to', targetUnit.name, damage, oldHP, targetUnit.currentHealth))
 end
 
 function Unit:getAvailableSpells()
