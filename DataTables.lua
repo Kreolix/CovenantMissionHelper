@@ -41,6 +41,8 @@ DataTables.EffectTypeEnum = {
     ["MaxHPMultiplier"] = 18,
     ["AdditionalDamageDealt"] = 19,
     ["AdditionalTakenDamage"] = 20,
+	["Died"] = 100,
+	["RemoveAura"] = 110
 }
 
 DataTables.TargetType = {
@@ -108,8 +110,8 @@ DataTables.TargetPriorityByType = {
         [12] = {8, 11, 7, 10, 6, 9, 5, 12} -- not sure
     },
     [3] =  { -- closest enemy
-        [0] = {5, 6, 9, 7, 10, 8, 11, 12}, -- not sure
-        [1] = {6, 7, 11, 10, 5, 8, 9, 12}, -- not sure
+        [0] = {5, 6, 9, 7, 10, 11, 8, 12}, -- not sure
+        [1] = {6, 7, 11, 8, 10, 5, 9, 12}, -- not sure
         [2] = {5, 6, 9, 10, 7, 11, 8, 12},
         [3] = {6, 7, 5, 10, 11, 8, 9, 12}, -- not sure
         [4] = {7, 8, 6, 12, 11, 5, 10, 9}, -- not sure
@@ -125,15 +127,15 @@ DataTables.TargetPriorityByType = {
     [5] = { -- furthest enemy
         [0] = {12, 8, 11, 10, 7, 9, 6, 5}, -- not sure
         [1] = {9, 5, 10, 12, 11, 6, 8, 7}, -- not sure
-        [2] = {12, 11, 8, 10, 7, 9, 6, 5},
-        [3] = {9, 5, 12, 8, 10, 11, 6, 7}, -- not sure
+        [2] = {12, 11, 8, 7, 10, 9, 6, 5},
+        [3] = {9, 5, 12, 8, 10, 6, 11, 7}, -- not sure
         [4] = {9, 5, 10, 6, 11, 12, 8, 7}, -- not sure
         [5] = {4, 1, 3, 0, 2}, -- not sure
         [6] = {4, 1, 0, 3, 2}, -- not sure
         [7] = {2, 0, 1, 4, 3}, -- not sure
         [8] = {0, 2, 1, 3, 4}, -- not sure
         [9] = {1, 4, 0, 3, 2}, -- not sure
-        [10] = {1, 4, 0, 3, 2}, -- not sure
+        [10] = {1, 0, 4, 3, 2}, -- not sure
         [11] = {0, 2, 1, 4, 3}, -- not sure
         [12] = {2, 0, 1, 3, 4} -- not sure
     }
@@ -189,12 +191,13 @@ DataTables.ConeEnemies = {
     [12] = {12}
 }
 
+-- key = main target, value = all targets
 DataTables.LineEnemies = {
     [0] = {0},
     [1] = {1},
-    [2] = {2, 0},
-    [3] = {3, 0},
-    [4] = {4, 1},
+    [2] = {2},
+    [3] = {3},
+    [4] = {4},
     [5] = {5, 9},
     [6] = {6, 10},
     [7] = {7, 11},

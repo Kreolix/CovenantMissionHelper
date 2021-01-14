@@ -9,3 +9,5 @@ Spell.lua
 DataTables.lua
 TargetManager.lua
 Unit.lua
+UI.lua
+Checker.lua
