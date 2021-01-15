@@ -73,6 +73,20 @@ local function createResultHeader(main_frame)
     return resultHeader
 end
 
+local function createPredictButton(resultInfoFrame)
+    local function onClick()
+        MissionHelper:showResult(MissionHelper:simulateFight(true))
+    end
+
+    local predictButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
+    resultInfoFrame.predictButton = predictButton
+        predictButton:SetSize(80, 30)
+        predictButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -PADDING, PADDING)
+        predictButton:SetText('Simulate')
+        predictButton:SetScript('onClick', onClick)
+        predictButton:Hide()
+end
+
 local function createResultInfo(mainFrame)
     local resultInfo = CreateFrame("Frame", nil, mainFrame, "CovenantMissionBaseFrameTemplate")
     mainFrame.resultInfo = resultInfo
@@ -86,6 +100,8 @@ local function createResultInfo(mainFrame)
         resultInfo.text:SetPoint("TOPLEFT", PADDING, -PADDING)
         resultInfo.text:SetJustifyH("LEFT")
         resultInfo.text:SetJustifyV("TOP")
+
+    createPredictButton(resultInfo)
 
     return resultInfo
 end
@@ -179,6 +195,7 @@ function MissionHelper:clearFrames()
     MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:SetScrollOffset(0)
     MissionHelper:setResultHeader('')
     MissionHelper:setResultInfo('')
+    MissionHelper:hidePredictButton()
     CMH.Board.CombatLog = {}
     CMH.Board.HiddenCombatLog = {}
 
@@ -194,4 +211,12 @@ end
 
 function MissionHelper:AddCombatLogMessage(message)
     MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:AddMessage(message)
+end
+
+function MissionHelper:hidePredictButton()
+    MissionHelper.missionHelperFrame.resultInfo.predictButton:Hide()
+end
+
+function MissionHelper:showPredictButton()
+    MissionHelper.missionHelperFrame.resultInfo.predictButton:Show()
 end

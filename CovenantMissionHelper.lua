@@ -15,36 +15,55 @@ end
 function MissionHelper:hookShowMission(...)
     MissionHelper:clearFrames()
     MissionHelper.missionHelperFrame:Show()
+    local board = MissionHelper:simulateFight(false)
+    MissionHelper:showResult(board)
+    return ...
+end
 
+local function setBoard(isCalcRandom)
     local missionPage = CovenantMissionFrame:GetMissionPage()
+    --TODO: always show health
     missionPage.Board:ShowHealthValues()
+    local board = CMH.Board:new(missionPage, isCalcRandom)
+    MissionHelper.missionHelperFrame.board = board
+    return board
+end
 
-    local board = CMH.Board:new(missionPage)
+function MissionHelper:simulateFight(isCalcRandom)
+    if isCalcRandom == nil then isCalcRandom = true end
+
+    local board = setBoard(isCalcRandom)
     board:simulate()
 
+    board.CombatLog = CMH.Board.CombatLog
+    board.HiddenCombatLog = CMH.Board.HiddenCombatLog
+    return board
+
+    --[[ TODO: board after fight
+        HP after fight = CovenantMissionFrame.MissionComplete.Board.framesByBoardIndex.HealthBar.health
+    --]]
+end
+
+function MissionHelper:showResult(board)
     local combatLogMessageFrame = MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame
     local combat_log = false and CMH.Board.HiddenCombatLog or CMH.Board.CombatLog
+
     MissionHelper:setResultHeader(board:getResult())
     MissionHelper:setResultInfo(board:getTeams())
     for _, text in ipairs(combat_log) do MissionHelper:AddCombatLogMessage(text) end
     MissionHelper:AddCombatLogMessage(board:getResult())
+
+    if board.hasRandomSpells then
+        MissionHelper:showPredictButton()
+    else
+        MissionHelper:hidePredictButton()
+    end
 
     combatLogMessageFrame.ScrollBar:SetMinMaxValues(0, combatLogMessageFrame:GetNumMessages())
     combatLogMessageFrame:SetScrollOffset(
             math.max(
                     combatLogMessageFrame:GetNumMessages() - math.floor(combatLogMessageFrame:GetNumVisibleLines() / 2),
                     0))
-
-    MissionHelper.missionHelperFrame.board = board
-    board.CombatLog = CMH.Board.CombatLog
-    board.HiddenCombatLog = CMH.Board.HiddenCombatLog
-
-    --[[ TODO: board after fight
-        HP after fight = CovenantMissionFrame.MissionComplete.Board.framesByBoardIndex.HealthBar.health
-        blizzard combat log = CovenantMissionFrame.MissionComplete.AdventuresCombatLog.CombatLogMessageFrame.historyBuffer.elements[].message
-    --]]
-
-    return ...
 end
 
 function MissionHelper:hookShowRewardScreen(...)

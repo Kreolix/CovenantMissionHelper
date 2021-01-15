@@ -1,6 +1,6 @@
 CovenantMissionHelper, CMH = ...
 
-local SIMULATE_ITERATIONS = 20
+local SIMULATE_ITERATIONS = 100
 
 local Board = {Errors = {}, CombatLog = {}, HiddenCombatLog = {}}
 
@@ -26,7 +26,7 @@ local function copy(obj, seen)
     return res
 end
 
-function Board:new(missionPage)
+function Board:new(missionPage, isCalcRandom)
     local newObj = {
         units = {},
         hasRandomSpells = false,
@@ -34,7 +34,8 @@ function Board:new(missionPage)
         probability = 100,
         isMissionOver = false,
         isEmpty = true,
-        initialAlliesHP = 0
+        initialAlliesHP = 0,
+        isCalcRandom = isCalcRandom
     }
     if missionPage.missionInfo == nil then
         -- completed mission
@@ -86,7 +87,7 @@ end
 function Board:simulate()
     if self.isEmpty then return end
 
-    if self.hasRandomSpells then
+    if self.hasRandomSpells and self.isCalcRandom then
         local new_board = {}
         local win_count = 0
         for i = 1, SIMULATE_ITERATIONS do
@@ -97,6 +98,8 @@ function Board:simulate()
             CMH.Board.HiddenCombatLog = {}
         end
         self.probability = math.floor(100 * win_count/SIMULATE_ITERATIONS)
+    elseif self.hasRandomSpells then
+        return
     end
 
    self:fight()
@@ -121,8 +124,6 @@ function Board:fight()
         end
         round = round + 1
     end
-
-    if not self.isMissionOver then CMH:log('\n\nMore than 100 rounds. Winner is undefined\n\n') end
 end
 
 function Board:setHasRandomSpells()
@@ -279,6 +280,10 @@ function Board:getTeams()
         return result
     end
 
+    if self.hasRandomSpells and self.isCalcRandom == false then
+        return "Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."
+    end
+
     local totalHP = 0
     local enemy_text = ''
     for i = 5, 12 do
@@ -308,6 +313,8 @@ end
 function Board:getResult()
     if self.isEmpty then
         return 'Add units on board'
+    elseif self.hasRandomSpells and self.isCalcRandom == false then
+        return ''
     elseif not self.isMissionOver then
         return '|cFFFF0000More than 100 rounds. Winner is undefined|r'
     end
@@ -316,7 +323,7 @@ function Board:getResult()
     local color = ''
     if self.probability == 100 and result == 1 then
         color = 'FF00FF00'
-    elseif self.probability == 0 or result == 0 then
+    elseif self.probability == 0 or (result == 0 and self.probability == 100) then
         color = 'FFFF0000'
     else
         color = 'FFFF7700'
@@ -324,7 +331,7 @@ function Board:getResult()
 
     local str_format = '|c%sPredicted result: %s (%s%%)|r'
     --str_format = '%s %s %s'
-    if self.probability > 0 and self.probability < 100 and result == 1 then
+    if self.probability > 0 and self.probability < 100 then
         return str_format:format(color, 'WIN', '< ' .. tostring(self.probability))
     elseif self.probability == 100 and result == 1 then
         return str_format:format(color, 'WIN', tostring(self.probability))
