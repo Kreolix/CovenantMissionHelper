@@ -3,10 +3,10 @@
 ## Author: Kreolix
 ## Version: 0.1
 
+DataTables.lua
 CovenantMissionHelper.lua
 Board.lua
 Spell.lua
-DataTables.lua
 TargetManager.lua
 Unit.lua
 UI.lua
