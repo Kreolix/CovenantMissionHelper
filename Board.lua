@@ -69,12 +69,13 @@ function Board:new(missionPage, isCalcRandom)
             info.maxHealth = info.autoCombatantStats.maxHealth
             info.health = info.autoCombatantStats.currentHealth
             info.attack = info.autoCombatantStats.attack
+            info.isAutoTroop = info.isAutoTroop ~= nil and info.isAutoTroop or (info.quality == 0)
             if info.autoCombatSpells == nil then info.autoCombatSpells = follower.autoCombatSpells end
             local myUnit = CMH.Unit:new(info)
             --SELECTED_CHAT_FRAME:AddMessage("myUnitName = " .. myUnit.name)
             newObj.units[i] = myUnit
             newObj.isEmpty = false
-            if myUnit.isAutoTroop == false then newObj.initialAlliesHP = newObj.initialAlliesHP + info.health end
+            if myUnit.isAutoTroop == false then newObj.initialAlliesHP = newObj.initialAlliesHP + myUnit.currentHealth end
         end
     end
 
@@ -301,7 +302,8 @@ function Board:getTeams()
         end
     end
     if text ~= '' then
-        text = string.format("Alive my units:\n%s \n\nTOTAL FOLLOWER'S REST HP = %s (%s)", text, totalHP, totalHP - self.initialAlliesHP)
+        local loseOrGain = (totalHP <= self.initialAlliesHP) and 'LOST' or 'RECEIVED'
+        text = string.format("Alive my units:\n%s \n\nTOTAL %s HP = %s", text, loseOrGain, self.initialAlliesHP - totalHP)
     end
     local warningText = ''
     if self.hasRandomSpells then
