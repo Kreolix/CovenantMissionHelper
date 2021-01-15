@@ -3,6 +3,7 @@ CovenantMissionHelper, CMH = ...
 local SIMULATE_ITERATIONS = 100
 
 local Board = {Errors = {}, CombatLog = {}, HiddenCombatLog = {}}
+local TargetTypeEnum = CMH.DataTables.TargetTypeEnum
 
 local function arrayForPrint(array)
     if not array then
@@ -131,7 +132,8 @@ function Board:setHasRandomSpells()
     for _, unit in pairs(self.units) do
         for _, spell in pairs(unit.spells) do
             for _, effect in pairs(spell.effects) do
-                if effect.TargetType == 19 or effect.TargetType == 20 or effect.TargetType == 21 then
+                if effect.TargetType == TargetTypeEnum.randomEnemy or effect.TargetType == TargetTypeEnum.randomEnemy_2
+                    or effect.TargetType == TargetTypeEnum.randomAlly then
                         self.hasRandomSpells = true
                         return
                 end
@@ -243,7 +245,7 @@ function Board:makeUnitAction(round, boardIndex)
                 end
             end
 
-            if effect.TargetType ~= 0 then lastTargetType = effect.TargetType end
+            if effect.TargetType ~= TargetTypeEnum.lastTarget then lastTargetType = effect.TargetType end
         end
 
         unit:startSpellCooldown(spell.ID)
@@ -395,7 +397,7 @@ end
 
 function Board:getTargetIndexes(unit, targetType, lastTargetType, lastTargetIndexes)
     -- update targets if skill has different effects target type
-    if lastTargetType ~= targetType and targetType ~= 0 then
+    if lastTargetType ~= targetType and targetType ~= TargetTypeEnum.lastTarget then
         local aliveUnits = self:getTargetableUnits()
         return CMH.TargetManager:getTargetIndexes(unit.boardIndex, targetType, aliveUnits, unit.tauntedBy)
     else

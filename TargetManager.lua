@@ -1,6 +1,7 @@
 CovenantMissionHelper, CMH = ...
 
 local TargetManager = {}
+local TargetTypeEnum = CMH.DataTables.TargetTypeEnum
 
 local function getTargetPriority(sourceIndex, targetType, mainTarget)
     local targets = CMH.DataTables.TargetPriorityByType[targetType][sourceIndex]
@@ -19,7 +20,7 @@ local function getSelfTarget(sourceIndex, targetType, boardUnits) return {source
 local function getSimpleTarget(sourceIndex, targetType, boardUnits, mainTarget)
     -- adjacent ally, closest enemy, furthest enemy
     local priority
-    if mainTarget ~= nil and (targetType == 3 or targetType == 5) then return {mainTarget} end
+    if mainTarget ~= nil and (targetType == TargetTypeEnum.closestEnemy or targetType == TargetTypeEnum.furthestEnemy) then return {mainTarget} end
     priority = getTargetPriority(sourceIndex, targetType)
     mainTarget = getMainTarget(priority, boardUnits)
     return {mainTarget}
@@ -81,7 +82,7 @@ end
 
 local function getClosestAllyCone(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local coneTargets = CMH.DataTables.ConeAllies[mainTarget]
     for i = 1, #coneTargets do
@@ -94,7 +95,7 @@ end
 
 local function getClosestEnemyCone(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local coneTargets = CMH.DataTables.ConeEnemies[mainTarget]
     for i = 1, #coneTargets do
@@ -107,7 +108,7 @@ end
 
 local function getClosestEnemyLine(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local lineTargets = CMH.DataTables.LineEnemies[mainTarget]
     for i = 1, #lineTargets do

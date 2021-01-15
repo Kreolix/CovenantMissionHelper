@@ -45,29 +45,29 @@ DataTables.EffectTypeEnum = {
 	["RemoveAura"] = 110
 }
 
-DataTables.TargetType = {
-    [0] = "last target",
-    [1] = "self",
-    [2] = "adjacent ally",
-    [3] = "closest enemy",
-    [5] = "furthest enemy",
-    [6] = "all allies",
-    [7] = "all enemies",
-    [8] = "all adjacent allies",
-    [9] = "all adjacent enemies",
-    [10] = "cone from the closest ally",
-    [11] = "cone from the closest enemy",
-    [13] = "line from the closest enemy",
-    [14] = "front line allies",
-    [15] = "front line enemies",
-    [16] = "all ranged allies",
-    [17] = "all ranged enemies",
-    [19] = "random enemy",
-    [20] = "random enemy",
-    [21] = "random ally",
-    [22] = "all allies",
-    [23] = "all allies",
-    [24] = "idk"
+DataTables.TargetTypeEnum = {
+    ["lastTarget"] = 0,
+    ["self"] = 1,
+    ["adjacentAlly"] = 2,
+    ["closestEnemy"] = 3,
+    ["furthestEnemy"] = 5,
+    ["allAllies"] = 6,
+    ["allEnemies"] = 7,
+    ["allAdjacentAllies"] = 8,
+    ["allAdjacentEnemies"] = 9,
+    ["closestAllyCone"] = 10,
+    ["closestEnemyCone"] = 11,
+    ["closestEnemyLine"] = 13,
+    ["frontLineAllies"] = 14,
+    ["frontLineEnemies"] = 15,
+    ["backLineAllies"] = 16,
+    ["backLineEnemies"] = 17,
+    ["randomEnemy_2"] = 19, -- ?
+    ["randomEnemy"] = 20,
+    ["randomAlly"] = 21,
+    ["allAllies_2"] = 22,
+    ["allAllies_3"] = 23,
+    ["unknown"] = 24,
 }
 
 DataTables.EffectFlags = {
@@ -159,6 +159,7 @@ DataTables.AdjacentAllies = {
 }
 
 --TODO: test it
+-- garrMission.ID = 2224
 DataTables.ConeAllies = {
     [0] = {0},
     [1] = {1},
@@ -175,6 +176,7 @@ DataTables.ConeAllies = {
     [12] = {12}
 }
 
+-- key = main target, value = all targets
 DataTables.ConeEnemies = {
     [0] = {0},
     [1] = {1},
@@ -210,7 +212,7 @@ DataTables.LineEnemies = {
 
 DataTables.startsOnCooldownSpells = {2, 68, 84, 85, 118, 139, 144, 152, 158, 163, 172, 181, 186, 228, 244, 247, 250, 254, 282, 285, 296}
 
--- Attack type don't match with unit role
+-- Attack type isn't match with unit role
 -- key = combatantID, value = attackType
 DataTables.UnusualAttackType = {
 	-- melee
