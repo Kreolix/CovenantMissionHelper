@@ -69,12 +69,10 @@ end
 function MissionHelper:hookShowRewardScreen(...)
     local board = MissionHelper.missionHelperFrame.board
     if board.hasRandomSpells then
-        print(tostring(board.hasRandomSpells))
         return
     end
 
     board.blizzardLog = _G["CovenantMissionFrame"].MissionComplete.autoCombatResult.combatLog
-    print(tostring(board.blizzardLog))
     board.compareLogs = MissionHelper:compareLogs(board.combatLogEvents, board.blizzardLog)
 
 

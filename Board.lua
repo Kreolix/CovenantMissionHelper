@@ -196,8 +196,14 @@ function Board:getTurnOrder()
         table.insert(order, unit.boardIndex)
     end
 
+    sort_table = {}
     for i = 5, 12 do
-        if self:isUnitAlive(i) then table.insert(order, self.units[i].boardIndex) end
+        if self:isUnitAlive(i) then table.insert(sort_table, self.units[i]) end
+    end
+    table.sort(sort_table, function (a, b) return (a.currentHealth > b.currentHealth) end)
+
+    for _, unit in pairs(sort_table) do
+        table.insert(order, unit.boardIndex)
     end
 
     CMH:debug_log("turn order -> " .. arrayForPrint(order))
