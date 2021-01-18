@@ -339,7 +339,7 @@ function Board:getTeams()
     end
     if text ~= '' then
         local loseOrGain = (totalHP <= self.initialAlliesHP) and 'LOST' or 'RECEIVED'
-        text = string.format("Alive my units:\n%s \n\nTOTAL %s HP = %s", text, loseOrGain, self.initialAlliesHP - totalHP)
+        text = string.format("Alive my units:\n%s \n\nTOTAL %s HP = %s", text, loseOrGain, math.abs(self.initialAlliesHP - totalHP))
     end
     local warningText = ''
     if self.hasRandomSpells then
@@ -363,7 +363,7 @@ function Board:getResult()
     elseif self.probability == 0 or (result == 0 and self.probability == 100) then
         return '|cFFFF0000 Predicted result: LOSE |r'
     else
-        return string.format('FFFF7700 Predicted result: WIN (%s%%)', self.probability)
+        return string.format('|cFFFF7700 Predicted result: WIN (%s%%) |r', self.probability)
     end
 end
 
