@@ -109,8 +109,8 @@ end
 
 function Unit:manageDoTHoT(sourceUnit, buff, isInitialPeriod)
     if isInitialPeriod == nil then isInitialPeriod = false end
-    CMH:log(string.format('sourceUnit = %s, duration = %s, period = %s',
-                tostring(sourceUnit.boardIndex), tostring(buff.duration), tostring(buff.currentPeriod)))
+    --CMH:log(string.format('sourceUnit = %s, duration = %s, period = %s',
+      --          tostring(sourceUnit.boardIndex), tostring(buff.duration), tostring(buff.currentPeriod)))
     if (buff.Effect == EffectTypeEnum.DoT or buff.Effect == EffectTypeEnum.HoT) and (buff.currentPeriod == 0 or isInitialPeriod) then
         sourceUnit:castSpellEffect(self, buff, {}, true)
     end
