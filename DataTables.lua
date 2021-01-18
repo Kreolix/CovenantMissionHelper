@@ -42,32 +42,33 @@ DataTables.EffectTypeEnum = {
     ["AdditionalDamageDealt"] = 19,
     ["AdditionalTakenDamage"] = 20,
 	["Died"] = 100,
+	["ApplyAura"] = 105,
 	["RemoveAura"] = 110
 }
 
-DataTables.TargetType = {
-    [0] = "last target",
-    [1] = "self",
-    [2] = "adjacent ally",
-    [3] = "closest enemy",
-    [5] = "furthest enemy",
-    [6] = "all allies",
-    [7] = "all enemies",
-    [8] = "all adjacent allies",
-    [9] = "all adjacent enemies",
-    [10] = "cone from the closest ally",
-    [11] = "cone from the closest enemy",
-    [13] = "line from the closest enemy",
-    [14] = "front line allies",
-    [15] = "front line enemies",
-    [16] = "all ranged allies",
-    [17] = "all ranged enemies",
-    [19] = "random enemy",
-    [20] = "random enemy",
-    [21] = "random ally",
-    [22] = "all allies",
-    [23] = "all allies",
-    [24] = "idk"
+DataTables.TargetTypeEnum = {
+    ["lastTarget"] = 0,
+    ["self"] = 1,
+    ["adjacentAlly"] = 2,
+    ["closestEnemy"] = 3,
+    ["furthestEnemy"] = 5,
+    ["allAllies"] = 6,
+    ["allEnemies"] = 7,
+    ["allAdjacentAllies"] = 8,
+    ["allAdjacentEnemies"] = 9,
+    ["closestAllyCone"] = 10,
+    ["closestEnemyCone"] = 11,
+    ["closestEnemyLine"] = 13,
+    ["frontLineAllies"] = 14,
+    ["frontLineEnemies"] = 15,
+    ["backLineAllies"] = 16,
+    ["backLineEnemies"] = 17,
+    ["randomEnemy_2"] = 19, -- ?
+    ["randomEnemy"] = 20,
+    ["randomAlly"] = 21,
+    ["allAllies_2"] = 22,
+    ["allAllies_3"] = 23,
+    ["unknown"] = 24,
 }
 
 DataTables.EffectFlags = {
@@ -101,12 +102,12 @@ DataTables.TargetPriorityByType = {
         [3] = {2, 0, 1, 4, 3},
         [4] = {3, 1, 2, 0, 4},
         [5] = {9, 6, 10, 7, 11, 8, 12, 5}, -- not sure
-        [6] = {5, 7, 10, 9, 11, 8, 12, 6}, -- not sure
+        [6] = {5, 10, 7, 9, 11, 8, 12, 6}, -- not sure
         [7] = {6, 8, 11, 10, 12, 5, 9, 7}, -- not sure
         [8] = {7, 12, 6, 11, 5, 10, 9, 8}, -- not sure
         [9] = {5, 6, 10, 7, 11, 8, 12, 9}, -- not sure
         [10] = {6, 5, 9, 7, 11, 8, 12, 10}, -- not sure
-        [11] = {6, 7, 8, 10, 12, 5, 9, 11}, -- not sure
+        [11] = {10, 6, 7, 8, 12, 5, 9, 11}, -- not sure
         [12] = {8, 11, 7, 10, 6, 9, 5, 12} -- not sure
     },
     [3] =  { -- closest enemy
@@ -125,11 +126,11 @@ DataTables.TargetPriorityByType = {
         [12] = {3, 4, 1, 2, 0} -- not sure
     },
     [5] = { -- furthest enemy
-        [0] = {12, 8, 9, 11, 10, 7, 6, 5}, -- not sure
+        [0] = {12, 8, 9, 11, 10, 7, 5, 6}, -- not sure
         [1] = {9, 5, 10, 12, 11, 6, 8, 7}, -- not sure
         [2] = {12, 11, 8, 7, 10, 9, 6, 5},
         [3] = {9, 12, 5, 8, 10, 11, 6, 7},
-        [4] = {9, 5, 10, 6, 11, 12, 8, 7}, -- not sure
+        [4] = {9, 5, 10, 6, 11, 12, 7, 8},
         [5] = {4, 1, 3, 0, 2}, -- not sure
         [6] = {4, 1, 0, 3, 2}, -- not sure
         [7] = {2, 0, 1, 4, 3}, -- not sure
@@ -158,7 +159,94 @@ DataTables.AdjacentAllies = {
     [12] = {7, 8, 11}
 }
 
+DataTables.AdjacentEnemies = {
+	[0] = {
+		["blockerUnits"] = {5, 6},
+		["aliveBlockerUnitGroup"] = {5, 6},
+		["deadBlockerUnitGroup"] = {5, 7, 9, 10, 11},
+		["aloneUnits"] = {8, 12}
+	},
+	[1] = {
+		["blockerUnits"] = {7},
+		["aliveBlockerUnitGroup"] = {6, 7},
+		["deadBlockerUnitGroup"] = {6, 8, 10, 11, 12},
+		["aloneUnits"] = {5, 9}
+	},
+	[2] = {
+		["blockerUnits"] = {5, 6},
+		["aliveBlockerUnitGroup"] = {5, 6},
+		["deadBlockerUnitGroup"] = {7, 9, 10, 11},
+		["aloneUnits"] = {8, 12}
+	},
+	[3] = {
+		["blockerUnits"] = {6, 7},
+		["aliveBlockerUnitGroup"] = {6, 7},
+		["deadBlockerUnitGroup"] = {5, 7, 9, 10, 11},
+		["aloneUnits"] = {8, 12}
+	},
+	[4] = {
+		["blockerUnits"] = {7, 8},
+		["aliveBlockerUnitGroup"] = {7, 8},
+		["deadBlockerUnitGroup"] = {6, 10, 11, 12},
+		["aloneUnits"] = {5, 9}
+	},
+	-- try to make more target for unproven data. Better predict false lose than false win
+	[5] = {
+		["blockerUnits"] = {2},
+		["aliveBlockerUnitGroup"] = {2},
+		["deadBlockerUnitGroup"] = {{0, 3}, {1, 4}},
+		["aloneUnits"] = {}
+	},
+	[6] = {
+		["blockerUnits"] = {2, 3},
+		["aliveBlockerUnitGroup"] = {2, 3}, -- proved
+		["deadBlockerUnitGroup"] = {0, 1, 2},
+		["aloneUnits"] = {}
+	}
+	-- 6 -> 2,3. 7 -> 3,4.
+	,
+	[7] = {
+		["blockerUnits"] = {3, 4},
+		["aliveBlockerUnitGroup"] = {3, 4}, -- proved
+		["deadBlockerUnitGroup"] = {0, 1, 2},
+		["aloneUnits"] = {}
+	},
+	[8] = {
+		["blockerUnits"] = {4},
+		["aliveBlockerUnitGroup"] = {4},
+		["deadBlockerUnitGroup"] = {{1, 3}, {0, 2}},
+		["aloneUnits"] = {}
+	},
+	[9] = {
+		["blockerUnits"] = {2},
+		["aliveBlockerUnitGroup"] = {2},
+		["deadBlockerUnitGroup"] = {{0, 3}, {1, 4}},
+		["aloneUnits"] = {}
+	},
+	[10] = {
+		["blockerUnits"] = {2, 3},
+		["aliveBlockerUnitGroup"] = {2, 3},
+		["deadBlockerUnitGroup"] = {0, 1, 2},
+		["aloneUnits"] = {}
+	}
+	-- 6 -> 2,3. 7 -> 3,4.
+	,
+	[11] = {
+		["blockerUnits"] = {3, 4},
+		["aliveBlockerUnitGroup"] = {3, 4},
+		["deadBlockerUnitGroup"] = {0, 1, 2},
+		["aloneUnits"] = {}
+	},
+	[12] = {
+		["blockerUnits"] = {4},
+		["aliveBlockerUnitGroup"] = {4},
+		["deadBlockerUnitGroup"] = {{1, 3}, {0, 2}},
+		["aloneUnits"] = {}
+	}
+}
+
 --TODO: test it
+-- garrMission.ID = 2224
 DataTables.ConeAllies = {
     [0] = {0},
     [1] = {1},
@@ -175,6 +263,7 @@ DataTables.ConeAllies = {
     [12] = {12}
 }
 
+-- key = main target, value = all targets
 DataTables.ConeEnemies = {
     [0] = {0},
     [1] = {1},
@@ -210,19 +299,20 @@ DataTables.LineEnemies = {
 
 DataTables.startsOnCooldownSpells = {2, 68, 84, 85, 118, 139, 144, 152, 158, 163, 172, 181, 186, 228, 244, 247, 250, 254, 282, 285, 296}
 
--- Attack type don't match with unit role
+-- Attack type isn't match with unit role
 -- key = combatantID, value = attackType
 DataTables.UnusualAttackType = {
 	-- melee
-	[1288] = 15,
+	[1288] = 15, [3684889] = 15,
 	-- ranged_physical
 	[1323] = 11, [1324] = 11, [3852840] = 11, [3852830] = 11, [3852829] = 11, [3852831] = 11, [3852834] = 11,
+	[3852908] = 11, [3580935] = 11,
 	-- ranged_magic
-	[175299] = 11, [3852909] = 11, [3852843] = 11, [3852835] = 11, [3583223] = 11, [3852835] = 11,
+	[175299] = 11, [3852909] = 11, [3852843] = 11, [3852835] = 11, [3583223] = 11,
 	[3856480] = 11, [3852864] = 11, [3921251] = 11, [175948] = 11,
 	-- heal_support
 	[3517256] = 11, [1212] = 11, [1258] = 11, [1311] = 11, [3852839] = 11, [3852877] = 11, [3852848] = 11,
-	[3852889] = 11, [3921219] = 11
+	[3852889] = 11, [3485232] = 11, [165562] = 11, [3684894] = 11, [3852627] = 11
 }
 
 -- key - spellID, value - list of skill's effect ordered by EffectIndex

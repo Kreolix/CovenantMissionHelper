@@ -1,6 +1,7 @@
 CovenantMissionHelper, CMH = ...
 
 local TargetManager = {}
+local TargetTypeEnum = CMH.DataTables.TargetTypeEnum
 
 local function getTargetPriority(sourceIndex, targetType, mainTarget)
     local targets = CMH.DataTables.TargetPriorityByType[targetType][sourceIndex]
@@ -19,7 +20,7 @@ local function getSelfTarget(sourceIndex, targetType, boardUnits) return {source
 local function getSimpleTarget(sourceIndex, targetType, boardUnits, mainTarget)
     -- adjacent ally, closest enemy, furthest enemy
     local priority
-    if mainTarget ~= nil and (targetType == 3 or targetType == 5) then return {mainTarget} end
+    if mainTarget ~= nil and (targetType == TargetTypeEnum.closestEnemy or targetType == TargetTypeEnum.furthestEnemy) then return {mainTarget} end
     priority = getTargetPriority(sourceIndex, targetType)
     mainTarget = getMainTarget(priority, boardUnits)
     return {mainTarget}
@@ -73,15 +74,44 @@ local function getAllAdjacentAllies(sourceIndex, targetType, boardUnits)
 end
 
 local function getAllAdjacentEnemies(sourceIndex, targetType, boardUnits, mainTarget)
-    -- TODO: Now attack 1 target only, but should two.
+    -- TODO: if taunt?
     local targets = {}
-    local priority = getTargetPriority(sourceIndex, 3, mainTarget)
-    return {getMainTarget(priority, boardUnits)}
+    local targetInfo = CMH.DataTables.AdjacentEnemies[sourceIndex]
+    local aliveBlockerUnit = getMainTarget(targetInfo.blockerUnits, boardUnits)
+
+    if aliveBlockerUnit ~= nil then
+        for _, boardIndex in ipairs(targetInfo.aliveBlockerUnitGroup) do
+            if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+        end
+    else
+        -- one cleave group
+        if type(targetInfo.deadBlockerUnitGroup[1]) == 'number' then
+            for _, boardIndex in ipairs(targetInfo.deadBlockerUnitGroup) do
+                if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+            end
+
+            --many cleave groups
+        elseif type(targetInfo.deadBlockerUnitGroup[1]) == 'table' then
+            for _, group in ipairs(targetInfo.deadBlockerUnitGroup) do
+                for _, boardIndex in ipairs(group) do
+                    if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+                    if #targets > 0 then return targets end
+                end
+            end
+        end
+    end
+
+    if #targets == 0 then
+        local singleTarget = getMainTarget(targetInfo.aloneUnits, boardUnits)
+        if singleTarget ~= nil then table.insert(targets, singleTarget) end
+    end
+
+    return targets
 end
 
 local function getClosestAllyCone(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local coneTargets = CMH.DataTables.ConeAllies[mainTarget]
     for i = 1, #coneTargets do
@@ -94,7 +124,7 @@ end
 
 local function getClosestEnemyCone(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local coneTargets = CMH.DataTables.ConeEnemies[mainTarget]
     for i = 1, #coneTargets do
@@ -107,7 +137,7 @@ end
 
 local function getClosestEnemyLine(sourceIndex, targetType, boardUnits, mainTarget)
     local targets = {}
-    mainTarget = getSimpleTarget(sourceIndex, 3, boardUnits, mainTarget)[1]
+    mainTarget = getSimpleTarget(sourceIndex, TargetTypeEnum.closestEnemy, boardUnits, mainTarget)[1]
     if mainTarget == nil then return {} end
     local lineTargets = CMH.DataTables.LineEnemies[mainTarget]
     for i = 1, #lineTargets do

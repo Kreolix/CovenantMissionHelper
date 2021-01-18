@@ -21,7 +21,7 @@ function MissionHelper:compareLogs(myLog, blizzLog)
             eventTable["equalsCasterBoardIndex"] = (myEvent.casterBoardIndex == blizzEvent.casterBoardIndex)
             eventTable["equalsSpellID"] = (myEvent.spellID == blizzEvent.spellID)
 
-            -- I dont differ melee spell and range spell. It actually doesn't matter.
+            -- I'm not differ melee spell and range spell. It actually doesn't matter.
             if (myEvent.type == Enum.GarrAutoMissionEventType.SpellMeleeDamage) or (myEvent.type == Enum.GarrAutoMissionEventType.SpellRangeDamage) then
                 eventTable["equalsType"] = (blizzEvent.type == Enum.GarrAutoMissionEventType.SpellMeleeDamage or blizzEvent.type == Enum.GarrAutoMissionEventType.SpellRangeDamage)
             -- TODO: Check carefully and fix it. Now just ignore that
@@ -46,7 +46,8 @@ function MissionHelper:compareLogs(myLog, blizzLog)
                 eventTable["target" .. target] = target_table
                 local myTarget, blizzTarget = myEvent.targetInfo[target], blizzEvent.targetInfo[target]
                 target_table["equalsBoardIndex"] = (myTarget.boardIndex == blizzTarget.boardIndex)
-                target_table["equalsMaxHealth"] = (myTarget.maxHealth == blizzTarget.maxHealth)
+                -- blizz may not save maxHP
+                target_table["equalsMaxHealth"] = ((myTarget.maxHealth == blizzTarget.maxHealth) or (myTarget.maxHealth ~= 0 and blizzTarget.maxHealth == 0))
                 target_table["equalsOldHealth"] = (myTarget.oldHealth == blizzTarget.oldHealth)
                 target_table["equalsNewHealth"] = (myTarget.newHealth == blizzTarget.newHealth)
 
@@ -60,8 +61,24 @@ function MissionHelper:compareLogs(myLog, blizzLog)
                 for _, field in pairs(targetFields) do
                     target_table[field] = (myTarget[field] == blizzTarget[field]) and myTarget[field] or tostring(myTarget[field]) .. '|' .. tostring(blizzTarget[field])
                 end
+
+                eventTable["equalsTarget" .. target] = target_table["equalsBoardIndex"] and target_table["equalsBoardIndex"]
+                        and target_table["equalsMaxHealth"] and target_table["equalsOldHealth"] and target_table["equalsNewHealth"] and target_table["equalsPoints"]
+            end
+
+            if #myEvent.targetInfo < #blizzEvent.targetInfo then
+                for i = #myEvent.targetInfo + 1, #blizzEvent.targetInfo do eventTable['BlizzTarget' .. i] = blizzEvent.targetInfo[i] end
+            elseif #myEvent.targetInfo > #blizzEvent.targetInfo then
+                for i = #blizzEvent.targetInfo + 1, #myEvent.targetInfo do eventTable['MyTarget' .. i] = myEvent.targetInfo[i] end
             end
         end
+
+        if #myLog[round].events < #blizzLog[round].events then
+                for i = #myLog[round].events + 1, #blizzLog[round].events do roundTable['BlizzEvent' .. i] = blizzLog[round].events[i] end
+            elseif #myLog[round].events > #blizzLog[round].events then
+                for i = #blizzLog[round].events + 1, #myLog[round].events do roundTable['MyEvent' .. i] = myLog[round].events[i] end
+            end
+
     end
 
     return checks

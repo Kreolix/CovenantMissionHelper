@@ -1,11 +1,22 @@
 CovenantMissionHelper, CMH = ...
 
 local Unit = {}
-local EffectTypeEnum = CMH.DataTables.EffectTypeEnum
+local EffectTypeEnum, EffectType = CMH.DataTables.EffectTypeEnum, CMH.DataTables.EffectType
+
+local function isDamageEffect(effect, isAppliedBuff)
+    return effect.Effect == EffectTypeEnum.Damage
+            or effect.Effect == EffectTypeEnum.Damage_2
+            or (
+                (effect.Effect == EffectTypeEnum.DoT or effect.Effect == EffectTypeEnum.Reflect or effect.Effect == EffectTypeEnum.Reflect_2)
+                and isAppliedBuff == true
+            )
+end
+
 function Unit:new(blizzardUnitInfo)
     local newObj = {
         -- use for unusual attack only, blizz dont store combatantID in mission's tables
-        ID = blizzardUnitInfo.garrFollowerID ~= nil and blizzardUnitInfo.garrFollowerID or blizzardUnitInfo.portraitFileDataID,
+        ID = blizzardUnitInfo.garrFollowerID ~= nil and blizzardUnitInfo.garrFollowerID
+                or blizzardUnitInfo.portraitFileDataID or blizzardUnitInfo.portraitIconID,
         name = blizzardUnitInfo.name,
         maxHealth = blizzardUnitInfo.maxHealth,
         currentHealth = blizzardUnitInfo.health,
@@ -51,7 +62,10 @@ function Unit:setSpells(autoCombatSpells)
     table.insert(self.spells, autoAttackSpell)
 
     for _, autoCombatSpell in pairs(autoCombatSpells) do
-        table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
+        --broken spells
+        if autoCombatSpell.autoCombatSpellID ~= 91 and autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
+            table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
+        end
     end
 end
 
@@ -60,8 +74,15 @@ function Unit:isAlive()
 end
 
 function Unit:getEffectBaseValue(effect)
-    if effect.Effect == 12 or effect.Effect == 13 or effect.Effect == 14 or effect.Effect == 15 then return effect.Points end
-    if effect.Flags == 1 or effect.Flags == 3 then
+    --isn't work in game
+    if effect.Effect == EffectTypeEnum.DamageDealtMultiplier then
+        return 0
+    elseif effect.Effect == EffectTypeEnum.DamageDealtMultiplier_2
+            or effect.Effect == EffectTypeEnum.DamageTakenMultiplier
+            or effect.Effect == EffectTypeEnum.DamageTakenMultiplier_2
+            or effect.Effect == EffectTypeEnum.Reflect then
+                return effect.Points
+    elseif effect.Flags == 1 or effect.Flags == 3 then
         return math.floor(effect.Points * self.attack)
     else
         return effect.Points
@@ -70,43 +91,33 @@ end
 
 function Unit:calculateEffectValue(targetUnit, effect)
     local value
-    if effect.Flags == 0 or effect.Flags == 2 then
+    if effect.Effect == EffectTypeEnum.Reflect or effect.Effect == EffectTypeEnum.Reflect_2 then
+        value = self.reflect
+    elseif effect.Flags == 0 or effect.Flags == 2 then
         value = math.floor(effect.Points * targetUnit.maxHealth)
     else
         value = math.floor(effect.Points * self.attack)
     end
 
-    if effect.Effect == EffectTypeEnum.Damage or effect.Effect == EffectTypeEnum.Damage_2 or effect.Effect == EffectTypeEnum.DoT then
-        value = self:getDamageMultiplier(targetUnit) * (value + self:getAdditionalDamage(targetUnit))
+    if isDamageEffect(effect, true) then
+        local multiplier, positive_multiplier = self:getDamageMultiplier(targetUnit)
+        value = multiplier * value + self:getAdditionalDamage(targetUnit) * positive_multiplier
     end
 
-    return math.max(math.floor(value), 0)
+    return math.max(math.floor(value + .00000000001), 0)
 end
 
 function Unit:manageDoTHoT(sourceUnit, buff, isInitialPeriod)
     if isInitialPeriod == nil then isInitialPeriod = false end
+    CMH:log(string.format('sourceUnit = %s, duration = %s, period = %s',
+                tostring(sourceUnit.boardIndex), tostring(buff.duration), tostring(buff.currentPeriod)))
     if (buff.Effect == EffectTypeEnum.DoT or buff.Effect == EffectTypeEnum.HoT) and (buff.currentPeriod == 0 or isInitialPeriod) then
-        local oldHP = self.currentHealth
-        local value = sourceUnit:calculateEffectValue(self, buff)
-        local text = ''
-
-        if buff.Effect == EffectTypeEnum.DoT then
-            self.currentHealth = math.max(0, self.currentHealth - value)
-            text = 'DoT'
-        else
-            self.currentHealth = math.min(self.maxHealth, self.currentHealth + value)
-            text = 'HoT'
-        end
-
-        CMH:log(string.format('|cFFFFFF00%s %s %s for %s. (HP %s -> %s)|r',
-                sourceUnit.name, text, self.name, value, oldHP, self.currentHealth))
+        sourceUnit:castSpellEffect(self, buff, {}, true)
     end
 end
 
 function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
     table.insert(targetUnit.buffs, CMH.Buff:new(effect, effectBaseValue, self.boardIndex, duration, name))
-    CMH:log(string.format('|c0066CCFF%s %s %s to %s (%s)|r',
-                self.name, 'apply', CMH.DataTables.EffectType[effect.Effect], targetUnit.name, effectBaseValue))
     if effect.Effect == EffectTypeEnum.Taunt then
         targetUnit.tauntedBy = self.boardIndex
     elseif effect.Effect == EffectTypeEnum.Untargetable then
@@ -122,15 +133,16 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
 end
 
 function Unit:getDamageMultiplier(targetUnit)
-    local negative_value = 0
-    local positive_value = 1
+    local buffs = {}
+    local multiplier, positive_multiplier = 1, 1
     for _, buff in pairs(self.buffs) do
         if buff.Effect == EffectTypeEnum.DamageDealtMultiplier or buff.Effect == EffectTypeEnum.DamageDealtMultiplier_2 then
-            CMH:debug_log('self buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            if buff.baseValue < 0 then
-                negative_value = negative_value + buff.baseValue
+            CMH:debug_log(string.format('self buff. effect = %s, baseValue = %s, spellID = %s, source = %s ',
+                    CMH.DataTables.EffectType[buff.Effect], buff.baseValue, buff.SpellID, buff.sourceIndex))
+            if buffs[buff.SpellID] == nil then
+                buffs[buff.SpellID] = buff.baseValue
             else
-                positive_value = positive_value + buff.baseValue
+                buffs[buff.SpellID] = buffs[buff.SpellID] + buff.baseValue
             end
         end
     end
@@ -138,17 +150,21 @@ function Unit:getDamageMultiplier(targetUnit)
     for _, buff in pairs(targetUnit.buffs) do
         if buff.Effect == EffectTypeEnum.DamageTakenMultiplier or buff.Effect == EffectTypeEnum.DamageTakenMultiplier_2 then
             CMH:debug_log('target buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
-            if buff.baseValue < 0 then
-                negative_value = negative_value + buff.baseValue
+            if buffs[buff.SpellID] == nil then
+                buffs[buff.SpellID] = buff.baseValue
             else
-                positive_value = positive_value + buff.baseValue
+                buffs[buff.SpellID] = buffs[buff.SpellID] + buff.baseValue
             end
         end
     end
 
-    local result = (1 + negative_value) * positive_value
-    if result ~= 1 then CMH:debug_log('damage multiplier = ' .. result) end
-    return math.max(result, 0)
+    for _, value in pairs(buffs) do
+        multiplier = multiplier * (1 + value)
+        if value > 0 then positive_multiplier = positive_multiplier * (1 + value) end
+    end
+
+    if multiplier ~= 1 then CMH:debug_log('damage multiplier = ' .. multiplier .. 'pos. multiplier = ' .. positive_multiplier) end
+    return math.max(multiplier, 0), positive_multiplier
 end
 
 function Unit:getAdditionalDamage(targetUnit)
@@ -168,35 +184,37 @@ function Unit:getAdditionalDamage(targetUnit)
     return result
 end
 
-function Unit:castSpellEffect(targetUnit, effect, duration, name)
+function Unit:castSpellEffect(targetUnit, effect, spell, isAppliedBuff)
     local oldTargetHP = targetUnit.currentHealth
     local value = 0
+    local color = (isAppliedBuff == false and spell:isAutoAttack()) and '00FFFFFF' or '0066CCFF'
+
     -- deal damage
-    if effect.Effect == EffectTypeEnum.Damage or effect.Effect == EffectTypeEnum.Damage_2 then
+    if isDamageEffect(effect, isAppliedBuff) then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.currentHealth = math.max(0, targetUnit.currentHealth - value)
-        local color = (effect.ID == 17 or effect.ID == 21) and '00FFFFFF' or '0066CCFF'
         CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
-                color, self.name, 'attack', targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
-        targetUnit:dealReflectDamage(self)
+            color, self.name, EffectType[effect.Effect], targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
 
     -- heal
-    elseif effect.Effect == EffectTypeEnum.Heal or effect.Effect == EffectTypeEnum.Heal_2 then
+    elseif effect.Effect == EffectTypeEnum.Heal or effect.Effect == EffectTypeEnum.Heal_2
+            or (effect.Effect == EffectTypeEnum.HoT and isAppliedBuff == true) then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.currentHealth = math.min(targetUnit.maxHealth, targetUnit.currentHealth + value)
-        CMH:log(string.format('|c0066CCFF%s %s %s for %s. (HP %s -> %s)|r',
-                self.name, 'heal', targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
+        CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
+            color, self.name, EffectType[effect.Effect], targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
 
     -- Maximum health multiplier
     elseif effect.Effect == EffectTypeEnum.MaxHPMultiplier then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.maxHealth = targetUnit.maxHealth + value
-        CMH:log(string.format('|c0066CCFF%s %s %s for %s. (HP %s -> %s)|r',
-                self.name, 'add max HP', targetUnit.name, value, oldTargetHP, targetUnit.maxHealth))
+        CMH:log(string.format('|c%s%s %s %s for %s|r',
+            color, self.name, EffectType[effect.Effect], targetUnit.name, value))
     else
         value = self:getEffectBaseValue(effect)
-        CMH:debug_log('effectBaseValue = ' .. tostring(value))
-        self:applyBuff(targetUnit, effect, value, duration, name)
+        self:applyBuff(targetUnit, effect, value, spell.duration, spell.name)
+        CMH:log(string.format('|c%s%s %s %s (%s)|r',
+            color, self.name, 'apply ' .. EffectType[effect.Effect], targetUnit.name, value))
     end
 
     return {
@@ -206,17 +224,6 @@ function Unit:castSpellEffect(targetUnit, effect, duration, name)
         newHealth = targetUnit.currentHealth,
         points = value
     }
-end
-
-function Unit:dealReflectDamage(targetUnit)
-    if self.reflect == 0 then return end
-
-    local damage = math.max(math.floor(self:getDamageMultiplier(targetUnit) * (self.reflect + self:getAdditionalDamage(targetUnit))), 0)
-    local oldHP = targetUnit.currentHealth
-    targetUnit.currentHealth = math.max(0, targetUnit.currentHealth - damage)
-    local color = '0066CCFF'
-    CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
-            color, self.name, 'reflect damage to', targetUnit.name, damage, oldHP, targetUnit.currentHealth))
 end
 
 function Unit:getAvailableSpells()
@@ -247,17 +254,18 @@ end
 function Unit:manageBuffs(sourceUnit)
     local i = 1
     local removed_buffs = {}
-    if #self.buffs > 0 then CMH:debug_log('unit = ' .. self.boardIndex .. ' buffs = ' .. #self.buffs) end
+    --if #self.buffs > 0 then CMH:debug_log('unit = ' .. self.boardIndex .. ' buffs = ' .. #self.buffs) end
     while i <= #self.buffs do
         local buff = self.buffs[i]
-        CMH:debug_log('buff effect = ' .. buff.Effect .. ' duration = ' .. tostring(buff.duration) ..
-                ' period = ' .. tostring(buff.Period))
         if buff.sourceIndex == sourceUnit.boardIndex then
+            CMH:debug_log('targetUnit = ' .. self.boardIndex ..
+                    ' buff effect = ' .. buff.Effect .. ' duration = ' .. tostring(buff.duration) ..
+                    ' period = ' .. tostring(buff.currentPeriod))
             self:manageDoTHoT(sourceUnit, buff, false)
             buff:decreaseRestTime()
         end
 
-        if buff.duration == 0 then
+        if buff.sourceIndex == sourceUnit.boardIndex and buff.duration == 0 then
             table.insert(removed_buffs, {
                 buff = buff,
                 targetBoardIndex = self.boardIndex,
