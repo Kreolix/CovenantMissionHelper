@@ -7,6 +7,8 @@ local RESULT_HEADER_WIDTH = 300
 local RESULT_HEADER_HEIGHT = 30
 local RESULT_INFO_HEIGHT = 160
 local SCROLL_BAR_WIDTH = 10
+local PREDICT_BUTTON_WIDTH = 80
+local PREDICT_BUTTON_HEIGHT = 30
 
 local function hideCorners(frame)
     frame.BaseFrameTopLeft:Hide()
@@ -80,6 +82,20 @@ local function createPredictButton(resultInfoFrame)
 
     local predictButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
     resultInfoFrame.predictButton = predictButton
+        predictButton:SetSize(PREDICT_BUTTON_WIDTH, PREDICT_BUTTON_HEIGHT)
+        predictButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -PADDING, PADDING)
+        predictButton:SetText('Simulate')
+        predictButton:SetScript('onClick', onClick)
+        predictButton:Hide()
+end
+
+local function createMagicButton(resultInfoFrame)
+    local function onClick()
+        MissionHelper:showResult(MissionHelper:simulateFight(true))
+    end
+
+    local predictButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
+    resultInfoFrame.predictButton = predictButton
         predictButton:SetSize(80, 30)
         predictButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -PADDING, PADDING)
         predictButton:SetText('Simulate')
@@ -101,6 +117,7 @@ local function createResultInfo(mainFrame)
         resultInfo.text:SetJustifyH("LEFT")
         resultInfo.text:SetJustifyV("TOP")
 
+    createMagicButton(resultInfo)
     createPredictButton(resultInfo)
 
     return resultInfo
@@ -198,6 +215,7 @@ function MissionHelper:clearFrames()
     MissionHelper:hidePredictButton()
     CMH.Board.CombatLog = {}
     CMH.Board.HiddenCombatLog = {}
+    CMH.Board.CombatLogEvents = {}
 
 end
 

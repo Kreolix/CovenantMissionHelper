@@ -475,6 +475,7 @@ end
 -- для spellID = 15 points = 1
 -- spellId = 109 по описанию target = self
 -- spellID = 125 по описанию target = random enemy. Пока удалю
+-- spellID = 91, effect = 11. Вообще не работает
 
 
 for spellID, effects in pairs(new_table) do

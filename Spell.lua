@@ -49,6 +49,10 @@ function Spell:decreaseCooldown()
     end
 end
 
+function Spell:isAutoAttack()
+    return self.ID == 11 or self.ID == 15
+end
+
 local Buff = {}
 function Buff:new(effect, effectBaseValue, sourceIndex, duration, name)
     local newBuff = {}
@@ -56,7 +60,7 @@ function Buff:new(effect, effectBaseValue, sourceIndex, duration, name)
         newBuff[k] = v
     end
     newBuff.Period = math.max(newBuff.Period - 1, 0)
-    newBuff.currentPeriod = newBuff.Period
+    newBuff.currentPeriod = math.max(newBuff.Period, 0)
     newBuff.baseValue = effectBaseValue
     newBuff.sourceIndex = sourceIndex
     newBuff.duration = duration
@@ -67,7 +71,7 @@ end
 
 function Buff:decreaseRestTime()
     self.duration = math.max(self.duration - 1, 0)
-    self.currentPeriod = self.currentPeriod == 0 and self.Period or math.max(self.Period - 1, 0)
+    self.currentPeriod = self.currentPeriod == 0 and self.Period or math.max(self.currentPeriod - 1, 0)
     return self.duration
 end
 

@@ -13,6 +13,7 @@ function MissionHelper:ADDON_LOADED(event, addon)
 end
 
 function MissionHelper:hookShowMission(...)
+    --print('hook show mission')
     MissionHelper:clearFrames()
     MissionHelper.missionHelperFrame:Show()
     local board = MissionHelper:simulateFight(false)
@@ -67,18 +68,19 @@ function MissionHelper:showResult(board)
 end
 
 function MissionHelper:hookShowRewardScreen(...)
+    --print('hook show reward screen')
     local board = MissionHelper.missionHelperFrame.board
     if board.hasRandomSpells then
         return
     end
 
     board.blizzardLog = _G["CovenantMissionFrame"].MissionComplete.autoCombatResult.combatLog
-    board.compareLogs = MissionHelper:compareLogs(board.combatLogEvents, board.blizzardLog)
-
-
+    board.CombatLogEvents = CMH.Board.CombatLogEvents
+    board.compareLogs = MissionHelper:compareLogs(board.CombatLogEvents, board.blizzardLog)
 end
 
 function MissionHelper:hookCloseMission(...)
+    --print('hook close mission')
     MissionHelper:clearFrames()
     MissionHelper.missionHelperFrame:Hide()
     return ...
@@ -86,12 +88,11 @@ end
 
 local function registerHook(...)
     hooksecurefunc(_G["CovenantMissionFrame"], "InitiateMissionCompletion", MissionHelper.hookShowMission)
-    hooksecurefunc(_G["CovenantMissionFrame"], "ShowMission", MissionHelper.hookShowMission)
     hooksecurefunc(_G["CovenantMissionFrame"], "UpdateAllyPower", MissionHelper.hookShowMission)
-    hooksecurefunc(_G["CovenantMissionFrame"], "UpdateEnemyPower", MissionHelper.hookShowMission)
     hooksecurefunc(_G["CovenantMissionFrame"].MissionComplete, "ShowRewardsScreen", MissionHelper.hookShowRewardScreen)
     hooksecurefunc(_G["CovenantMissionFrame"], "CloseMission", MissionHelper.hookCloseMission)
     hooksecurefunc(_G["CovenantMissionFrame"], "CloseMissionComplete", MissionHelper.hookCloseMission)
+    hooksecurefunc(_G["CovenantMissionFrame"], "Hide", MissionHelper.hookCloseMission)
 end
 
 function MissionHelper:hookSetupTabs(...)

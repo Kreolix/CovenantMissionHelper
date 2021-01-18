@@ -74,10 +74,39 @@ local function getAllAdjacentAllies(sourceIndex, targetType, boardUnits)
 end
 
 local function getAllAdjacentEnemies(sourceIndex, targetType, boardUnits, mainTarget)
-    -- TODO: Now attack 1 target only, but should two.
+    -- TODO: if taunt?
     local targets = {}
-    local priority = getTargetPriority(sourceIndex, 3, mainTarget)
-    return {getMainTarget(priority, boardUnits)}
+    local targetInfo = CMH.DataTables.AdjacentEnemies[sourceIndex]
+    local aliveBlockerUnit = getMainTarget(targetInfo.blockerUnits, boardUnits)
+
+    if aliveBlockerUnit ~= nil then
+        for _, boardIndex in ipairs(targetInfo.aliveBlockerUnitGroup) do
+            if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+        end
+    else
+        -- one cleave group
+        if type(targetInfo.deadBlockerUnitGroup[1]) == 'number' then
+            for _, boardIndex in ipairs(targetInfo.deadBlockerUnitGroup) do
+                if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+            end
+
+            --many cleave groups
+        elseif type(targetInfo.deadBlockerUnitGroup[1]) == 'table' then
+            for _, group in ipairs(targetInfo.deadBlockerUnitGroup) do
+                for _, boardIndex in ipairs(group) do
+                    if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
+                    if #targets > 0 then return targets end
+                end
+            end
+        end
+    end
+
+    if #targets == 0 then
+        local singleTarget = getMainTarget(targetInfo.aloneUnits, boardUnits)
+        if singleTarget ~= nil then table.insert(targets, singleTarget) end
+    end
+
+    return targets
 end
 
 local function getClosestAllyCone(sourceIndex, targetType, boardUnits, mainTarget)
