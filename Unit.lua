@@ -17,6 +17,7 @@ function Unit:new(blizzardUnitInfo)
         -- use for unusual attack only, blizz dont store combatantID in mission's tables
         ID = blizzardUnitInfo.garrFollowerID ~= nil and blizzardUnitInfo.garrFollowerID
                 or blizzardUnitInfo.portraitFileDataID or blizzardUnitInfo.portraitIconID,
+        followerGUID = blizzardUnitInfo.followerGUID,
         name = blizzardUnitInfo.name,
         maxHealth = blizzardUnitInfo.maxHealth,
         currentHealth = blizzardUnitInfo.health,
@@ -27,6 +28,8 @@ function Unit:new(blizzardUnitInfo)
         tauntedBy = nil,
         untargetable = false,
         reflect = 0,
+        isLoseLvlUp = blizzardUnitInfo.isLoseLvlUp,
+        isWinLvlUp = blizzardUnitInfo.isWinLvlUp,
         buffs = {}
     }
 
@@ -101,7 +104,7 @@ function Unit:calculateEffectValue(targetUnit, effect)
 
     if isDamageEffect(effect, true) then
         local multiplier, positive_multiplier = self:getDamageMultiplier(targetUnit)
-        value = multiplier * value + self:getAdditionalDamage(targetUnit) * positive_multiplier
+        value = multiplier * (value + self:getAdditionalDamage(targetUnit))
     end
 
     return math.max(math.floor(value + .00000000001), 0)
@@ -159,11 +162,11 @@ function Unit:getDamageMultiplier(targetUnit)
     end
 
     for _, value in pairs(buffs) do
-        multiplier = multiplier * (1 + value)
+        multiplier = multiplier + value
         if value > 0 then positive_multiplier = positive_multiplier * (1 + value) end
     end
 
-    if multiplier ~= 1 then CMH:debug_log('damage multiplier = ' .. multiplier .. 'pos. multiplier = ' .. positive_multiplier) end
+    if multiplier ~= 1 then CMH:debug_log('damage multiplier = ' .. multiplier .. ' pos. multiplier = ' .. positive_multiplier) end
     return math.max(multiplier, 0), positive_multiplier
 end
 

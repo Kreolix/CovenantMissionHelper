@@ -29,6 +29,7 @@ end
 
 function MissionHelper:addRound()
     table.insert(CombatLogEvents, {events = {}})
+    --print('round ' .. #CombatLogEvents)
 end
 
 function MissionHelper:addEvent(spellID, effectType, casterBoardIndex, targetInfo)
@@ -38,6 +39,7 @@ function MissionHelper:addEvent(spellID, effectType, casterBoardIndex, targetInf
                 type = getBlizzardEventType(effectType, spellID),
                 targetInfo = targetInfo
             })
+    --print('event ' .. #CombatLogEvents[#CombatLogEvents].events)
 end
 
 CMH.Board.CombatLogEvents = CombatLogEvents
