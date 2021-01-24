@@ -89,18 +89,32 @@ local function createPredictButton(resultInfoFrame)
         predictButton:Hide()
 end
 
-local function createMagicButton(resultInfoFrame)
+local function createBestDispositionButton(resultInfoFrame)
     local function onClick()
-        MissionHelper:showResult(MissionHelper:simulateFight(true))
+        MissionHelper:findBestDisposition()
     end
 
-    local predictButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
-    resultInfoFrame.predictButton = predictButton
-        predictButton:SetSize(80, 30)
-        predictButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -PADDING, PADDING)
-        predictButton:SetText('Simulate')
-        predictButton:SetScript('onClick', onClick)
-        predictButton:Hide()
+    local function onEnter(buttonFrame)
+        GameTooltip:SetOwner(buttonFrame, "ANCHOR_TOPLEFT")
+        GameTooltip_AddNormalLine(GameTooltip, "Change the order of your troops to minimize HP loss")
+        GameTooltip_AddColoredLine(GameTooltip, "It shuffles only units on board and doesn't consider others", RED_FONT_COLOR)
+        GameTooltip:SetPoint("TOPLEFT", buttonFrame, "BOTTOMRIGHT", 0, 0);
+        GameTooltip:Show()
+    end
+
+    local function onLeave()
+        GameTooltip_Hide()
+    end
+
+    local BestDispositionButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
+    resultInfoFrame.BestDispositionButton = BestDispositionButton
+        BestDispositionButton:SetSize(PREDICT_BUTTON_WIDTH, PREDICT_BUTTON_HEIGHT)
+        BestDispositionButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -2*PADDING - PREDICT_BUTTON_WIDTH, PADDING)
+        BestDispositionButton:SetText('Optimize')
+        BestDispositionButton:SetScript('onClick', onClick)
+        BestDispositionButton:SetScript('onEnter', onEnter)
+        BestDispositionButton:SetScript('onLeave', onLeave)
+        BestDispositionButton:Hide()
 end
 
 local function createResultInfo(mainFrame)
@@ -117,7 +131,7 @@ local function createResultInfo(mainFrame)
         resultInfo.text:SetJustifyH("LEFT")
         resultInfo.text:SetJustifyV("TOP")
 
-    createMagicButton(resultInfo)
+    createBestDispositionButton(resultInfo)
     createPredictButton(resultInfo)
 
     return resultInfo
@@ -237,4 +251,12 @@ end
 
 function MissionHelper:showPredictButton()
     MissionHelper.missionHelperFrame.resultInfo.predictButton:Show()
+end
+
+function MissionHelper:hideBestDispositionButton()
+    MissionHelper.missionHelperFrame.resultInfo.BestDispositionButton:Hide()
+end
+
+function MissionHelper:showBestDispositionButton()
+    MissionHelper.missionHelperFrame.resultInfo.BestDispositionButton:Show()
 end

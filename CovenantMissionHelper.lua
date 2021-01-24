@@ -16,7 +16,8 @@ function MissionHelper:hookShowMission(...)
     --print('hook show mission')
     MissionHelper:clearFrames()
     MissionHelper.missionHelperFrame:Show()
-    local board = MissionHelper:simulateFight(false)
+    local isCompletedMission = CovenantMissionFrame:GetMissionPage().missionInfo == nil
+    local board = MissionHelper:simulateFight(isCompletedMission)
     MissionHelper:showResult(board)
     return ...
 end
@@ -38,6 +39,7 @@ function MissionHelper:simulateFight(isCalcRandom)
 
     board.CombatLog = CMH.Board.CombatLog
     board.HiddenCombatLog = CMH.Board.HiddenCombatLog
+    board.CombatLogEvents = CMH.Board.CombatLogEvents
     return board
 
     --[[ TODO: board after fight
@@ -45,19 +47,45 @@ function MissionHelper:simulateFight(isCalcRandom)
     --]]
 end
 
+function MissionHelper:findBestDisposition()
+    local missionPage = CovenantMissionFrame:GetMissionPage()
+    local metaBoard = CMH.MetaBoard:new(missionPage, false)
+
+    MissionHelper:clearBoard(missionPage)
+    MissionHelper.missionHelperFrame.board = metaBoard:findBestDisposition()
+
+    for _, unit in pairs(MissionHelper.missionHelperFrame.board.units) do
+        if unit.boardIndex < 5 then
+            local followerInfo = C_Garrison.GetFollowerInfo(unit.followerGUID)
+            followerInfo.autoCombatSpells = C_Garrison.GetFollowerAutoCombatSpells(unit.followerGUID, followerInfo.level);
+            CovenantMissionFrame:AssignFollowerToMission(missionPage.Board:GetFrameByBoardIndex(unit.boardIndex), followerInfo)
+        end
+    end
+
+    MissionHelper:showResult(MissionHelper.missionHelperFrame.board)
+end
+
 function MissionHelper:showResult(board)
+    --print('hook show result')
     local combatLogMessageFrame = MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame
     local combat_log = false and CMH.Board.HiddenCombatLog or CMH.Board.CombatLog
 
-    MissionHelper:setResultHeader(board:getResult())
-    MissionHelper:setResultInfo(board:getTeams())
+    MissionHelper:setResultHeader(board:constructResultString())
+    MissionHelper:setResultInfo(board:getMyTeam())
     for _, text in ipairs(combat_log) do MissionHelper:AddCombatLogMessage(text) end
-    MissionHelper:AddCombatLogMessage(board:getResult())
+    MissionHelper:AddCombatLogMessage(board:constructResultString())
 
-    if board.hasRandomSpells then
-        MissionHelper:showPredictButton()
+    if CovenantMissionFrame:GetMissionPage().missionInfo ~= nil then -- open mission, not completed
+        if board.hasRandomSpells then
+            MissionHelper:showPredictButton()
+            MissionHelper:hideBestDispositionButton()
+        else
+            MissionHelper:hidePredictButton()
+            MissionHelper:showBestDispositionButton()
+        end
     else
         MissionHelper:hidePredictButton()
+        MissionHelper:hideBestDispositionButton()
     end
 
     combatLogMessageFrame.ScrollBar:SetMinMaxValues(0, combatLogMessageFrame:GetNumMessages())
@@ -75,8 +103,21 @@ function MissionHelper:hookShowRewardScreen(...)
     end
 
     board.blizzardLog = _G["CovenantMissionFrame"].MissionComplete.autoCombatResult.combatLog
-    board.CombatLogEvents = CMH.Board.CombatLogEvents
+    -- TODO: fix it
+    -- my events log cleared somewhere. run it another time to compare blizz and my log
+    --board:simulate()
+    --board.CombatLogEvents = CMH.Board.CombatLogEvents
     board.compareLogs = MissionHelper:compareLogs(board.CombatLogEvents, board.blizzardLog)
+end
+
+function MissionHelper:clearBoard(missionPage)
+    for followerFrame in missionPage.Board:EnumerateFollowers() do
+		local followerGUID = followerFrame:GetFollowerGUID();
+		if followerGUID then
+			C_Garrison.RemoveFollowerFromMission(missionPage.missionInfo.missionID, followerGUID, followerFrame.boardIndex)
+            followerFrame:SetEmpty()
+		end
+	end
 end
 
 function MissionHelper:hookCloseMission(...)

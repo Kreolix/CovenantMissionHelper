@@ -476,6 +476,7 @@ end
 -- spellId = 109 по описанию target = self
 -- spellID = 125 по описанию target = random enemy. Пока удалю
 -- spellID = 91, effect = 11. Вообще не работает
+-- spellID = 104, effectID = 143. Почему-то хилит больше, чем есть в БД
 
 
 for spellID, effects in pairs(new_table) do
@@ -498,6 +499,10 @@ for spellID, effects in pairs(new_table) do
   elseif spellID == 109 then
     for i, effect in pairs(effects) do
       if effect.TargetType == 0 then effect.TargetType = 1 end
+    end
+  elseif spellID == 104 then
+    for i, effect in pairs(effects) do
+      if effect.ID == 143 then effect.Points = 1 end
     end
   end
 end

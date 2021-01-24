@@ -3,6 +3,8 @@ CovenantMissionHelper, CMH = ...
 local SIMULATE_ITERATIONS = 100
 local MAX_ROUNDS = 100
 local MAX_RANDOM_ROUNDS = 50
+local LVL_UP_ICON = "|TInterface\\petbattles\\battlebar-abilitybadge-strong-small:0|t"
+local SKULL_ICON = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:0|t"
 
 local Board = {Errors = {}, CombatLog = {}, HiddenCombatLog = {}, CombatLogEvents = {}}
 local TargetTypeEnum, EffectTypeEnum = CMH.DataTables.TargetTypeEnum, CMH.DataTables.EffectTypeEnum
@@ -41,14 +43,23 @@ function Board:new(missionPage, isCalcRandom)
         isMissionOver = false,
         isEmpty = true,
         initialAlliesHP = 0,
+        initialEnemiesHP = 0,
         isCalcRandom = isCalcRandom,
-        max_rounds = MAX_ROUNDS
+        max_rounds = MAX_ROUNDS,
+        baseXP = 0,
+        winXP = 0,
+        --missionPage = missionPage,
     }
-    if missionPage.missionInfo == nil then
-        -- completed mission
-        newObj.missionID = _G["CovenantMissionFrame"].MissionComplete.currentMission.missionID
-    else
-        newObj.missionID = missionPage.missionInfo.missionID
+    local isCompletedMission = (missionPage.missionInfo == nil)
+    local missionInfo = isCompletedMission and _G["CovenantMissionFrame"].MissionComplete.currentMission or missionPage.missionInfo
+
+    newObj.missionID = missionInfo.missionID
+    newObj.baseXP = missionInfo.xp
+    newObj.winXP = newObj.baseXP
+    for _, reward in pairs (missionInfo.rewards) do
+        if reward.followerXP then
+            newObj.winXP = newObj.winXP + reward.followerXP
+        end
     end
 
     -- set enemy's units
@@ -57,30 +68,46 @@ function Board:new(missionPage, isCalcRandom)
         local enemyUnit = CMH.Unit:new(enemies[i])
         --SELECTED_CHAT_FRAME:AddMessage("enemyUnitName = " .. enemyUnit.name)
         newObj.units[enemyUnit.boardIndex] = enemyUnit
+        newObj.initialEnemiesHP = newObj.initialEnemiesHP + enemyUnit.currentHealth
     end
 
     --set my team
-    local myTeam
-    if missionPage.missionInfo == nil then
+    -- If completed mission have < 5 followers, "empty" frames isn't empty actually.
+    -- It saved from last completed mission.
+    local framesByBoardIndex, boardIndexes = {}, {}
+    if isCompletedMission then
         -- completed mission
-        myTeam = _G["CovenantMissionFrame"].MissionComplete.Board.framesByBoardIndex
-
+        for _, follower in pairs(_G["CovenantMissionFrame"].MissionComplete.followerGUIDToInfo) do
+            table.insert(boardIndexes, follower.boardIndex)
+        end
+        framesByBoardIndex = _G["CovenantMissionFrame"].MissionComplete.Board.framesByBoardIndex
     else
-        myTeam = missionPage.Board.framesByBoardIndex
+        boardIndexes = {0, 1, 2, 3, 4}
+        framesByBoardIndex = missionPage.Board.framesByBoardIndex
     end
 
-    for i, follower in pairs(myTeam) do
+    for _, boardIndex in pairs(boardIndexes) do
+        local follower = framesByBoardIndex[boardIndex]
         local info = follower.info
-        if info and follower.boardIndex <= 4 then
-            info.boardIndex = i
+        if info then
+            info.boardIndex = follower.boardIndex
             info.maxHealth = info.autoCombatantStats.maxHealth
             info.health = info.autoCombatantStats.currentHealth
             info.attack = info.autoCombatantStats.attack
             info.isAutoTroop = info.isAutoTroop ~= nil and info.isAutoTroop or (info.quality == 0)
+            info.followerGUID = follower:GetFollowerGUID()
+            local XPToLvlUp = isCompletedMission and info.maxXP - info.currentXP or info.levelXP - info.xp
+            if info.isAutoTroop then
+                info.isLoseLvlUp = false
+                info.isWinLvlUp = false
+            else
+                info.isLoseLvlUp = XPToLvlUp < newObj.baseXP
+                info.isWinLvlUp = XPToLvlUp < newObj.winXP
+            end
             if info.autoCombatSpells == nil then info.autoCombatSpells = follower.autoCombatSpells end
             local myUnit = CMH.Unit:new(info)
             --SELECTED_CHAT_FRAME:AddMessage("myUnitName = " .. myUnit.name)
-            newObj.units[i] = myUnit
+            newObj.units[follower.boardIndex] = myUnit
             newObj.isEmpty = false
             if myUnit.isAutoTroop == false then newObj.initialAlliesHP = newObj.initialAlliesHP + myUnit.currentHealth end
         end
@@ -102,7 +129,7 @@ function Board:simulate()
         for i = 1, SIMULATE_ITERATIONS do
             new_board = copy(self)
             new_board:fight()
-            win_count = win_count + new_board:getResultInt()
+            if new_board:isWin() then win_count = win_count + 1 end
             CMH.Board.CombatLog = {}
             CMH.Board.HiddenCombatLog = {}
             CMH.Board.CombatLogEvents = {}
@@ -133,6 +160,8 @@ function Board:fight()
             end
             self:makeUnitAction(round, boardIndex)
         end
+        -- unit can die by DoT, but I don't check it inside makeUnitAction
+        self.isMissionOver = self:checkMissionOver()
         round = round + 1
     end
 end
@@ -249,11 +278,7 @@ function Board:makeUnitAction(round, boardIndex)
             MissionHelper:addEvent(spell.ID, isAura(effect.Effect) and EffectTypeEnum.ApplyAura or effect.Effect, boardIndex, targetInfo)
 
             for _, info in pairs(targetInfo) do
-                if info.newHealth == 0 then
-                    MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Died, boardIndex, targetInfo)
-                    CMH:log(string.format('|cFFFF7700 %s kill %s |r', unit.name, self.units[info.boardIndex].name))
-                    self.isMissionOver = self:checkMissionOver()
-                end
+                self:onUnitTakeDamage(spell.ID, boardIndex, info)
             end
 
             if effect.TargetType ~= TargetTypeEnum.lastTarget then lastTargetType = effect.TargetType end
@@ -268,11 +293,7 @@ function Board:makeUnitAction(round, boardIndex)
             if targetUnit.reflect > 0 then
                 local eventTargetInfo = targetUnit:castSpellEffect(unit, {Effect = CMH.DataTables.EffectTypeEnum.Reflect, ID = -1}, {}, true)
                 MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Reflect, targetUnit.boardIndex, {eventTargetInfo})
-                if eventTargetInfo.newHealth == 0 then
-                    MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Died, boardIndex, {eventTargetInfo})
-                    CMH:log(string.format('|cFFFF7700 %s kill %s |r', unit.name, self.units[eventTargetInfo.boardIndex].name))
-                    self.isMissionOver = self:checkMissionOver()
-                end
+                self:onUnitTakeDamage(spell.ID, targetUnit, eventTargetInfo)
             end
         end
     end
@@ -304,51 +325,61 @@ function Board:manageBuffsFromDeadUnits()
     end
 end
 
-function Board:getTeams()
-    local function constructString(unit)
-        local spells = ''
-        for _, spell in ipairs(unit.spells) do
-            -- without auto attack
-            if spell.ID ~= 11 and spell.ID ~= 15 then
-                spells = spells .. spell.name .. '(ID = ' .. spell.ID .. ', cd=' .. spell.cooldown .. ', duration=' .. spell.duration .. '),'
+function Board:onUnitTakeDamage(spellID, casterBoardIndex, eventTargetInfo)
+    if eventTargetInfo.newHealth == 0 then
+        MissionHelper:addEvent(spellID, CMH.DataTables.EffectTypeEnum.Died, casterBoardIndex, {eventTargetInfo})
+        CMH:log(string.format('|cFFFF7700 %s kill %s |r', self.units[casterBoardIndex].name, self.units[eventTargetInfo.boardIndex].name))
+        self.isMissionOver = self:checkMissionOver()
+    end
+end
+
+function Board:getTotalLostHP(isWin)
+    local restHP = 0
+    local _start, _end, startHP = 0, 4, self.initialAlliesHP
+    if not isWin then _start, _end, startHP = 5, 12, self.initialEnemiesHP end
+    for i = _start, _end do
+        if self.units[i] and self.units[i].isAutoTroop == false then
+            if self.units[i].isWinLvlUp then
+                restHP = restHP + self.units[i].maxHealth
+            elseif self:isUnitAlive(i) then
+                restHP = restHP + self.units[i].currentHealth
             end
         end
-        local result = '    ' .. unit.boardIndex .. '. ' .. unit.name .. '. HP = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
-        return result
+    end
+
+    return startHP - restHP
+end
+
+function Board:getMyTeam()
+    local function constructString(unit, isWin)
+        local result = unit.name .. '. HP = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
+        --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
+        if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
+        if unit.currentHealth == 0 then result = SKULL_ICON .. result end
+        return '    ' .. result
     end
 
     if self.hasRandomSpells and self.isCalcRandom == false then
         return "Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."
     end
 
-    local totalHP = 0
-    local enemy_text = ''
-    for i = 5, 12 do
-        if self:isUnitAlive(i) then
-            enemy_text = enemy_text .. constructString(self.units[i])
-        end
-    end
-    if enemy_text ~= '' then enemy_text = 'Alive enemy units:\n' .. enemy_text end
+    local isWin = self:isWin()
+    local lostHP = self:getTotalLostHP(true)
+    local loseOrGain = lostHP >= 0 and 'LOST' or 'RECEIVED'
+    local warningText = self.hasRandomSpells and "|cFFFF0000Units have random abilities. Actual rest HP may not be the same as predicted|r\n" or ''
 
     local text = ''
     for i = 0, 4 do
-        if self:isUnitAlive(i) then
-            text = text .. constructString(self.units[i])
-            if self.units[i].isAutoTroop == false then totalHP = totalHP + self.units[i].currentHealth end
+        if self.units[i] then
+            text = text .. constructString(self.units[i], isWin)
         end
     end
-    if text ~= '' then
-        local loseOrGain = (totalHP <= self.initialAlliesHP) and 'LOST' or 'RECEIVED'
-        text = string.format("Alive my units:\n%s \n\nTOTAL %s HP = %s", text, loseOrGain, math.abs(self.initialAlliesHP - totalHP))
-    end
-    local warningText = ''
-    if self.hasRandomSpells then
-        warningText = "|cFFFF0000Units have random abilities. Actual rest HP may not be the same as predicted|r\n"
-    end
-    return warningText .. enemy_text  .. text
+    text = string.format("%sMy units:\n%s \n\nTOTAL %s HP = %s", warningText, text, loseOrGain, math.abs(lostHP))
+
+    return text
 end
 
-function Board:getResult()
+function Board:constructResultString()
     if self.isEmpty then
         return 'Add units on board'
     elseif self.hasRandomSpells and self.isCalcRandom == false then
@@ -357,21 +388,20 @@ function Board:getResult()
         return string.format('|cFFFF0000More than %s rounds. Winner is undefined|r', self.max_rounds)
     end
 
-    local result = self:getResultInt()
-    if self.probability == 100 and result == 1 then
+    local result = self:isWin()
+    if self.probability == 100 and result then
         return '|cFF00FF00 Predicted result: WIN |r'
-    elseif self.probability == 0 or (result == 0 and self.probability == 100) then
+    elseif self.probability == 0 or (result == false and self.probability == 100) then
         return '|cFFFF0000 Predicted result: LOSE |r'
     else
-        return string.format('|cFFFF7700 Predicted result: WIN (%s%%) |r', self.probability)
+        return string.format('|cFFFF7700 Predicted result: WIN (~%s%%) |r', self.probability)
     end
 end
 
-function Board:getResultInt()
-    -- 1 - win, 0 - lose
+function Board:isWin()
     for _, unit in pairs(self.units) do
         if unit:isAlive() then
-            if unit.boardIndex > 4 then return 0 else return 1
+            if unit.boardIndex > 4 then return false else return true
             end
         end
     end
