@@ -122,7 +122,7 @@ DataTables.TargetPriorityByType = {
         [8] = {4, 3, 1, 2, 0}, -- not sure
         [9] = {2, 3, 0, 1, 4},
         [10] = {2, 3, 4, 0, 1},
-        [11] = {2, 3, 4, 1, 0}, -- not sure
+        [11] = {2, 3, 4, 0, 1},
         [12] = {3, 4, 1, 2, 0} -- not sure
     },
     [5] = { -- furthest enemy

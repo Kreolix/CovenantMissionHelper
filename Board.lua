@@ -96,11 +96,12 @@ function Board:new(missionPage, isCalcRandom)
             info.attack = info.autoCombatantStats.attack
             info.isAutoTroop = info.isAutoTroop ~= nil and info.isAutoTroop or (info.quality == 0)
             info.followerGUID = follower:GetFollowerGUID()
-            local XPToLvlUp = isCompletedMission and info.maxXP - info.currentXP or info.levelXP - info.xp
+            local XPToLvlUp = 0
             if info.isAutoTroop then
                 info.isLoseLvlUp = false
                 info.isWinLvlUp = false
             else
+                XPToLvlUp = isCompletedMission and info.maxXP - info.currentXP or info.levelXP - info.xp
                 info.isLoseLvlUp = XPToLvlUp < newObj.baseXP
                 info.isWinLvlUp = XPToLvlUp < newObj.winXP
             end
@@ -293,7 +294,7 @@ function Board:makeUnitAction(round, boardIndex)
             if targetUnit.reflect > 0 then
                 local eventTargetInfo = targetUnit:castSpellEffect(unit, {Effect = CMH.DataTables.EffectTypeEnum.Reflect, ID = -1}, {}, true)
                 MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Reflect, targetUnit.boardIndex, {eventTargetInfo})
-                self:onUnitTakeDamage(spell.ID, targetUnit, eventTargetInfo)
+                self:onUnitTakeDamage(spell.ID, targetUnit.boardIndex, eventTargetInfo)
             end
         end
     end
