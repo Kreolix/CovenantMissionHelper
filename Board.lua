@@ -294,7 +294,7 @@ function Board:makeUnitAction(round, boardIndex)
             if targetUnit.reflect > 0 then
                 local eventTargetInfo = targetUnit:castSpellEffect(unit, {Effect = CMH.DataTables.EffectTypeEnum.Reflect, ID = -1}, {}, true)
                 MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Reflect, targetUnit.boardIndex, {eventTargetInfo})
-                self:onUnitTakeDamage(spell.ID, targetUnit, eventTargetInfo)
+                self:onUnitTakeDamage(spell.ID, targetUnit.boardIndex, eventTargetInfo)
             end
         end
     end
