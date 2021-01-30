@@ -341,7 +341,7 @@ function Board:getTotalLostHP(isWin)
     for i = _start, _end do
         if self.units[i] and self.units[i].isAutoTroop == false then
             if self.units[i].isWinLvlUp then
-                restHP = restHP + self.units[i].maxHealth
+                restHP = restHP + self.units[i].initalHealth
             elseif self:isUnitAlive(i) then
                 restHP = restHP + self.units[i].currentHealth
             end

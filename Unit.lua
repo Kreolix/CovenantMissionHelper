@@ -20,6 +20,7 @@ function Unit:new(blizzardUnitInfo)
         followerGUID = blizzardUnitInfo.followerGUID,
         name = blizzardUnitInfo.name,
         maxHealth = blizzardUnitInfo.maxHealth,
+        initalHealth = blizzardUnitInfo.health,
         currentHealth = blizzardUnitInfo.health,
         attack = blizzardUnitInfo.attack,
         isAutoTroop = blizzardUnitInfo.isAutoTroop,
