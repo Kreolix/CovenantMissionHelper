@@ -4,30 +4,54 @@ local hooksecurefunc = _G["hooksecurefunc"]
 MissionHelper = CreateFrame("Frame", "MissionHelper", UIParent)
 MissionHelper.isLoaded = false
 
+local function registerHook()
+    -- open/close mission
+    hooksecurefunc(_G["CovenantMissionFrame"], "InitiateMissionCompletion", MissionHelper.hookShowMission)
+    hooksecurefunc(_G["CovenantMissionFrame"], "UpdateAllyPower", MissionHelper.hookShowMission)
+    hooksecurefunc(_G["CovenantMissionFrame"].MissionComplete, "ShowRewardsScreen", MissionHelper.hookShowRewardScreen)
+    hooksecurefunc(_G["CovenantMissionFrame"], "CloseMission", MissionHelper.hookCloseMission)
+    hooksecurefunc(_G["CovenantMissionFrame"], "CloseMissionComplete", MissionHelper.hookCloseMission)
+    hooksecurefunc(_G["CovenantMissionFrame"], "Hide", MissionHelper.hookCloseMission)
+
+    -- mission's rewards
+    hooksecurefunc("GarrisonMissionButton_SetRewards", MissionHelper.addBaseXPToRewards)
+    hooksecurefunc(_G["C_Garrison"], "GetInProgressMissions", MissionHelper.addXPPerHour)
+    hooksecurefunc(_G["C_Garrison"], "GetAvailableMissions", MissionHelper.addXPPerHour)
+
+    -- always show HP
+    hooksecurefunc(_G["CovenantMissionFrame"].MissionTab.MissionPage.Board, "HideHealthValues", MissionHelper.ShowHealthValues)
+    hooksecurefunc(_G["CovenantMissionFrame"].MissionComplete.Board, "HideHealthValues", MissionHelper.ShowHealthValues)
+end
+
 function MissionHelper:ADDON_LOADED(event, addon)
     if addon == "Blizzard_GarrisonUI" then
         if self.isLoaded then return end
-        hooksecurefunc(_G["CovenantMissionFrame"], "SetupTabs", self.hookSetupTabs)
+        registerHook()
+        MissionHelper:editDefaultFrame()
+        MissionHelper:createMissionHelperFrame()
         self.isLoaded = true
     end
 end
 
 function MissionHelper:hookShowMission(...)
     --print('hook show mission')
-    MissionHelper:clearFrames()
-    MissionHelper.missionHelperFrame:Show()
-    local isCompletedMission = CovenantMissionFrame:GetMissionPage().missionInfo == nil
+    local missionPage = CovenantMissionFrame:GetMissionPage()
+    local missionInfo = missionPage.missionInfo
+    MissionHelperFrame:clearFrames()
+    MissionHelperFrame:updateMissionHeader(missionInfo and missionInfo or _G["CovenantMissionFrame"].MissionComplete.currentMission)
+    MissionHelperFrame:Show()
+
+    local isCompletedMission = missionInfo == nil
     local board = MissionHelper:simulateFight(isCompletedMission)
+    if isCompletedMission then _G["CovenantMissionFrame"].MissionComplete.Board:ShowHealthValues() else missionPage.Board:ShowHealthValues() end
     MissionHelper:showResult(board)
     return ...
 end
 
 local function setBoard(isCalcRandom)
     local missionPage = CovenantMissionFrame:GetMissionPage()
-    --TODO: always show health
-    missionPage.Board:ShowHealthValues()
     local board = CMH.Board:new(missionPage, isCalcRandom)
-    MissionHelper.missionHelperFrame.board = board
+    MissionHelperFrame.board = board
     return board
 end
 
@@ -52,9 +76,9 @@ function MissionHelper:findBestDisposition()
     local metaBoard = CMH.MetaBoard:new(missionPage, false)
 
     MissionHelper:clearBoard(missionPage)
-    MissionHelper.missionHelperFrame.board = metaBoard:findBestDisposition()
+    MissionHelperFrame.board = metaBoard:findBestDisposition()
 
-    for _, unit in pairs(MissionHelper.missionHelperFrame.board.units) do
+    for _, unit in pairs(MissionHelperFrame.board.units) do
         if unit.boardIndex < 5 then
             local followerInfo = C_Garrison.GetFollowerInfo(unit.followerGUID)
             followerInfo.autoCombatSpells = C_Garrison.GetFollowerAutoCombatSpells(unit.followerGUID, followerInfo.level);
@@ -62,30 +86,30 @@ function MissionHelper:findBestDisposition()
         end
     end
 
-    MissionHelper:showResult(MissionHelper.missionHelperFrame.board)
+    MissionHelper:showResult(MissionHelperFrame.board)
 end
 
 function MissionHelper:showResult(board)
     --print('hook show result')
-    local combatLogMessageFrame = MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame
+    local combatLogMessageFrame = MissionHelperFrame.combatLogFrame.CombatLogMessageFrame
     local combat_log = false and CMH.Board.HiddenCombatLog or CMH.Board.CombatLog
 
-    MissionHelper:setResultHeader(board:constructResultString())
-    MissionHelper:setResultInfo(board:getMyTeam())
-    for _, text in ipairs(combat_log) do MissionHelper:AddCombatLogMessage(text) end
-    MissionHelper:AddCombatLogMessage(board:constructResultString())
+    MissionHelperFrame:setResultHeader(board:constructResultString())
+    MissionHelperFrame:setResultInfo(board:getMyTeam())
+    for _, text in ipairs(combat_log) do MissionHelperFrame:AddCombatLogMessage(text) end
+    MissionHelperFrame:AddCombatLogMessage(board:constructResultString())
 
     if CovenantMissionFrame:GetMissionPage().missionInfo ~= nil then -- open mission, not completed
+        MissionHelperFrame:showButtonsFrame()
         if board.hasRandomSpells then
-            MissionHelper:showPredictButton()
-            MissionHelper:hideBestDispositionButton()
+            MissionHelperFrame:disableBestDispositionButton()
+            MissionHelperFrame:enablePredictButton()
         else
-            MissionHelper:hidePredictButton()
-            MissionHelper:showBestDispositionButton()
+            MissionHelperFrame:enableBestDispositionButton()
+            MissionHelperFrame:disablePredictButton()
         end
     else
-        MissionHelper:hidePredictButton()
-        MissionHelper:hideBestDispositionButton()
+        MissionHelperFrame:hideButtonsFrame()
     end
 
     combatLogMessageFrame.ScrollBar:SetMinMaxValues(0, combatLogMessageFrame:GetNumMessages())
@@ -97,7 +121,7 @@ end
 
 function MissionHelper:hookShowRewardScreen(...)
     --print('hook show reward screen')
-    local board = MissionHelper.missionHelperFrame.board
+    local board = MissionHelperFrame.board
     if board.hasRandomSpells then
         return
     end
@@ -122,30 +146,46 @@ end
 
 function MissionHelper:hookCloseMission(...)
     --print('hook close mission')
-    MissionHelper:clearFrames()
-    MissionHelper.missionHelperFrame:Hide()
+    MissionHelperFrame:clearFrames()
+    MissionHelperFrame:Hide()
     return ...
 end
 
-local function registerHook(...)
-    hooksecurefunc(_G["CovenantMissionFrame"], "InitiateMissionCompletion", MissionHelper.hookShowMission)
-    hooksecurefunc(_G["CovenantMissionFrame"], "UpdateAllyPower", MissionHelper.hookShowMission)
-    hooksecurefunc(_G["CovenantMissionFrame"].MissionComplete, "ShowRewardsScreen", MissionHelper.hookShowRewardScreen)
-    hooksecurefunc(_G["CovenantMissionFrame"], "CloseMission", MissionHelper.hookCloseMission)
-    hooksecurefunc(_G["CovenantMissionFrame"], "CloseMissionComplete", MissionHelper.hookCloseMission)
-    hooksecurefunc(_G["CovenantMissionFrame"], "Hide", MissionHelper.hookCloseMission)
+function MissionHelper:addBaseXPToRewards(rewards)
+    if self.info == nil then return end
+
+    local baseXPReward = {
+        icon = 894556,
+        followerXP = self.info.xp,
+        title = 'Base XP',
+        tooltip = '+' .. self.info.xp .. ' XP\n+'
+                .. string.format("%3d", self.info.xp / (self.info.durationSeconds / 3600)) ..'XP/hour',
+    }
+
+    local Reward = self.Rewards[#rewards + 1]
+    if not Reward then
+        Reward = CreateFrame("Frame", nil, self, "GarrisonMissionListButtonRewardTemplate")
+        Reward:SetPoint("RIGHT", self.Rewards[#rewards], "LEFT", 0, 0)
+        self.Rewards[#rewards + 1] = Reward
+    end
+
+    GarrisonMissionButton_SetReward(Reward, baseXPReward, {})
+    Reward:Show()
 end
 
-function MissionHelper:hookSetupTabs(...)
-    registerHook(...)
-    MissionHelper:editDefaultFrame(...)
-    MissionHelper:createMissionHelperFrame(...)
+function MissionHelper:addXPPerHour(followerTypeID)
+    if type(self) ~= 'table' then return end
 
-    return ...
+    for _, mission in pairs(self) do
+        if mission.rewards[1].followerXP then
+            mission.rewards[1].tooltip = mission.rewards[1].tooltip .. '\n' ..
+                    '+' .. string.format("%3d", mission.rewards[1].followerXP / (mission.durationSeconds / 3600)) ..'XP/hour'
+        end
+    end
 end
 
-function MissionHelper:updateText(frame, newText)
-    frame:AddMessage(newText)
+function MissionHelper:ShowHealthValues()
+    self:ShowHealthValues()
 end
 
 MissionHelper:RegisterEvent("ADDON_LOADED")

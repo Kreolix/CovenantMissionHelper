@@ -103,6 +103,7 @@ function Unit:calculateEffectValue(targetUnit, effect)
     end
 
     if isDamageEffect(effect, true) then
+        if effect.Effect == EffectTypeEnum.DoT and not self:isAlive() then return value end
         local multiplier, positive_multiplier = self:getDamageMultiplier(targetUnit)
         value = multiplier * (value + self:getAdditionalDamage(targetUnit))
     end
@@ -136,38 +137,47 @@ function Unit:applyBuff(targetUnit, effect, effectBaseValue, duration, name)
 end
 
 function Unit:getDamageMultiplier(targetUnit)
+    -- мб сначала складываются отдельно модификаторы на источнике и на цели, а потом между собой перемножаются
     local buffs = {}
-    local multiplier, positive_multiplier = 1, 1
+    local multiplier, positive_multiplier, multiplier_2 = 1, 1, 1
     for _, buff in pairs(self.buffs) do
         if buff.Effect == EffectTypeEnum.DamageDealtMultiplier or buff.Effect == EffectTypeEnum.DamageDealtMultiplier_2 then
             CMH:debug_log(string.format('self buff. effect = %s, baseValue = %s, spellID = %s, source = %s ',
                     CMH.DataTables.EffectType[buff.Effect], buff.baseValue, buff.SpellID, buff.sourceIndex))
+            multiplier = multiplier + buff.baseValue
+
+            --[[
             if buffs[buff.SpellID] == nil then
                 buffs[buff.SpellID] = buff.baseValue
             else
                 buffs[buff.SpellID] = buffs[buff.SpellID] + buff.baseValue
             end
+            --]]
         end
     end
 
     for _, buff in pairs(targetUnit.buffs) do
         if buff.Effect == EffectTypeEnum.DamageTakenMultiplier or buff.Effect == EffectTypeEnum.DamageTakenMultiplier_2 then
             CMH:debug_log('target buff ' .. CMH.DataTables.EffectType[buff.Effect] .. ' ' .. buff.baseValue)
+            multiplier_2 = multiplier_2 + buff.baseValue
+            --[[
             if buffs[buff.SpellID] == nil then
                 buffs[buff.SpellID] = buff.baseValue
             else
                 buffs[buff.SpellID] = buffs[buff.SpellID] + buff.baseValue
             end
+            --]]
         end
     end
-
+--[[
     for _, value in pairs(buffs) do
         multiplier = multiplier * (1 + value)
         if value > 0 then positive_multiplier = positive_multiplier * (1 + value) end
     end
-
-    if multiplier ~= 1 then CMH:debug_log('damage multiplier = ' .. multiplier .. ' pos. multiplier = ' .. positive_multiplier) end
-    return math.max(multiplier, 0), positive_multiplier
+--]]
+    multiplier = multiplier * multiplier_2
+    if multiplier ~= 1 then CMH:debug_log('damage multiplier = ' .. multiplier .. ' pos. multiplier = ' .. multiplier_2) end
+    return math.max(multiplier, 0), multiplier_2
 end
 
 function Unit:getAdditionalDamage(targetUnit)
