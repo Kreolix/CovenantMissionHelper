@@ -3,12 +3,15 @@ local MissionHelper = _G["MissionHelper"]
 
 local MAX_FRAME_WIDTH = 500
 local PADDING = 20
+local MISSION_HEADER_HEIGHT = 90
+local BUTTONS_FRAME_WIDTH = 300
+local BUTTONS_FRAME_HEIGHT = 40
 local RESULT_HEADER_WIDTH = 300
 local RESULT_HEADER_HEIGHT = 30
-local RESULT_INFO_HEIGHT = 160
+local RESULT_INFO_HEIGHT = 400
 local SCROLL_BAR_WIDTH = 10
-local PREDICT_BUTTON_WIDTH = 80
-local PREDICT_BUTTON_HEIGHT = 30
+local BUTTON_WIDTH = 120
+local BUTTON_HEIGHT = 25
 
 local function hideCorners(frame)
     frame.BaseFrameTopLeft:Hide()
@@ -24,14 +27,13 @@ local function hideBaseCorners(frame)
     frame.RaisedFrameEdges.BaseFrameBottomRightCorner:Hide()
 end
 
-local function createMainFrame()
+local function editMainFrame()
     local mainFrameWidth = math.min(
-            GetScreenWidth() * UIParent:GetEffectiveScale() - (CovenantMissionFrame:GetRight() * CovenantMissionFrame:GetEffectiveScale()) - PADDING,
+            GetScreenWidth() * UIParent:GetEffectiveScale() - (CovenantMissionFrame:GetRight() * CovenantMissionFrame:GetEffectiveScale()) - 2,
             MAX_FRAME_WIDTH
     )
-    local frame  = CreateFrame("Frame", "missionHelperFrame", _G["CovenantMissionFrame"], "CovenantMissionBaseFrameTemplate") -- GarrisonUITemplate/BasicFrameTemplate
-        _G["MissionHelper"].missionHelperFrame = frame
-        frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT")
+    local frame  = _G["MissionHelperFrame"]
+        frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT", 0, 0)
         frame:SetClampedToScreen(true)
         frame:SetSize(mainFrameWidth, CovenantMissionFrame:GetHeight())
         frame:EnableMouse(true)
@@ -58,10 +60,23 @@ local function createMainFrame()
     return frame
 end
 
-local function createResultHeader(main_frame)
-    local resultHeader = CreateFrame("Frame", nil, main_frame)
-    main_frame.resultHeader = resultHeader
-        resultHeader:SetPoint("TOP", main_frame, "TOP", 0, -PADDING)
+local function createMissionHeader(mainFrame)
+    local missionHeader = CreateFrame("Frame", nil, mainFrame, "MissionHelperHeaderTemplate") -- CovenantMissionListButtonTemplate/MissionHelperHeaderTemplate
+    mainFrame.missionHeader = missionHeader
+        missionHeader:SetPoint("TOP", mainFrame, "TOP", 0, -PADDING)
+        missionHeader:SetSize(mainFrame:GetWidth() - 2*PADDING, MISSION_HEADER_HEIGHT)
+
+    return missionHeader
+end
+
+-------------------------------------------
+--- Mission Result
+-------------------------------------------
+
+local function createResultHeader(mainFrame)
+    local resultHeader = CreateFrame("Frame", nil, mainFrame)
+    mainFrame.resultHeader = resultHeader
+        resultHeader:SetPoint("TOP", mainFrame.missionHeader, "BOTTOM", 0, -PADDING)
         resultHeader:SetSize(RESULT_HEADER_WIDTH, RESULT_HEADER_HEIGHT)
         resultHeader.BaseFrameBackground = resultHeader:CreateTexture()
         resultHeader.BaseFrameBackground:SetAtlas("adventures_mission_materialframe")
@@ -75,53 +90,11 @@ local function createResultHeader(main_frame)
     return resultHeader
 end
 
-local function createPredictButton(resultInfoFrame)
-    local function onClick()
-        MissionHelper:showResult(MissionHelper:simulateFight(true))
-    end
-
-    local predictButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
-    resultInfoFrame.predictButton = predictButton
-        predictButton:SetSize(PREDICT_BUTTON_WIDTH, PREDICT_BUTTON_HEIGHT)
-        predictButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -PADDING, PADDING)
-        predictButton:SetText('Simulate')
-        predictButton:SetScript('onClick', onClick)
-        predictButton:Hide()
-end
-
-local function createBestDispositionButton(resultInfoFrame)
-    local function onClick()
-        MissionHelper:findBestDisposition()
-    end
-
-    local function onEnter(buttonFrame)
-        GameTooltip:SetOwner(buttonFrame, "ANCHOR_TOPLEFT")
-        GameTooltip_AddNormalLine(GameTooltip, "Change the order of your troops to minimize HP loss")
-        GameTooltip_AddColoredLine(GameTooltip, "It shuffles only units on board and doesn't consider others", RED_FONT_COLOR)
-        GameTooltip:SetPoint("TOPLEFT", buttonFrame, "BOTTOMRIGHT", 0, 0);
-        GameTooltip:Show()
-    end
-
-    local function onLeave()
-        GameTooltip_Hide()
-    end
-
-    local BestDispositionButton = CreateFrame("Button", nil, resultInfoFrame, "UIPanelButtonTemplate")
-    resultInfoFrame.BestDispositionButton = BestDispositionButton
-        BestDispositionButton:SetSize(PREDICT_BUTTON_WIDTH, PREDICT_BUTTON_HEIGHT)
-        BestDispositionButton:SetPoint("BOTTOMRIGHT", resultInfoFrame, "BOTTOMRIGHT", -2*PADDING - PREDICT_BUTTON_WIDTH, PADDING)
-        BestDispositionButton:SetText('Optimize')
-        BestDispositionButton:SetScript('onClick', onClick)
-        BestDispositionButton:SetScript('onEnter', onEnter)
-        BestDispositionButton:SetScript('onLeave', onLeave)
-        BestDispositionButton:Hide()
-end
-
 local function createResultInfo(mainFrame)
     local resultInfo = CreateFrame("Frame", nil, mainFrame, "CovenantMissionBaseFrameTemplate")
     mainFrame.resultInfo = resultInfo
         resultInfo:SetSize(mainFrame:GetWidth() - 2*PADDING, RESULT_INFO_HEIGHT)
-        resultInfo:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", PADDING, -(RESULT_HEADER_HEIGHT + 1.5*PADDING))
+        resultInfo:SetPoint("TOP", mainFrame.resultHeader, "BOTTOM", 0, -PADDING/2)
         hideBaseCorners(resultInfo)
         hideCorners(resultInfo)
 
@@ -131,38 +104,39 @@ local function createResultInfo(mainFrame)
         resultInfo.text:SetJustifyH("LEFT")
         resultInfo.text:SetJustifyV("TOP")
 
-    createBestDispositionButton(resultInfo)
-    createPredictButton(resultInfo)
-
     return resultInfo
 end
 
+-------------------------------------------
+--- Combat Log
+-------------------------------------------
+
 local function createScrollingMessageFrame(mainFrame, combatLogFrame)
+    local frame_height = combatLogFrame:GetHeight() - 2*PADDING
     local messageFrame = CreateFrame("ScrollingMessageFrame", "missionHelperMessageFrame", combatLogFrame)
     combatLogFrame.CombatLogMessageFrame = messageFrame
         messageFrame:SetFontObject(GameFontNormal)
-        messageFrame:SetSize(mainFrame:GetWidth() - 5*PADDING, mainFrame:GetHeight() - 300)
+        messageFrame:SetSize(mainFrame:GetWidth() - 5*PADDING, frame_height)
         messageFrame:SetPoint("TOPLEFT", PADDING, -PADDING)
         messageFrame:SetJustifyH("LEFT")
         messageFrame:SetJustifyV("TOP")
-        --messageFrame:SetHyperlinksEnabled(true)
         messageFrame:SetFading(false)
         messageFrame:SetMaxLines(20000)
-        --messageFrame:ScrollToTop()
     return messageFrame
 end
 
 local function createScrollBar(mainFrame, combatLogFrame)
-    local scrollBar = CreateFrame("Slider", "missionHelperScrollBar", combatLogFrame, "OribosScrollBarTemplate")
+    local frame_height = combatLogFrame:GetHeight() - 3*PADDING
+    local scrollBar = CreateFrame("Slider", nil, combatLogFrame, "OribosScrollBarTemplate")
     combatLogFrame.CombatLogMessageFrame.ScrollBar = scrollBar
-        scrollBar:SetPoint("TOPRIGHT", combatLogFrame, "TOPRIGHT", -SCROLL_BAR_WIDTH, -30)
-        scrollBar:SetSize(SCROLL_BAR_WIDTH, mainFrame:GetHeight() - 320)
+        scrollBar:SetPoint("TOPRIGHT", combatLogFrame, "TOPRIGHT", -SCROLL_BAR_WIDTH, -1.5*PADDING)
+        scrollBar:SetSize(SCROLL_BAR_WIDTH, frame_height)
         scrollBar:SetFrameLevel(combatLogFrame:GetFrameLevel() + 1)
         scrollBar:SetMinMaxValues(0, 100)
         scrollBar:SetValueStep(5)
 
     scrollBar:SetScript("OnValueChanged", function(self, value)
-        MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:SetScrollOffset(select(2, self:GetMinMaxValues()) - value)
+        MissionHelperFrame.combatLogFrame.CombatLogMessageFrame:SetScrollOffset(select(2, self:GetMinMaxValues()) - value)
     end)
 
     scrollBar:SetValue(select(2, scrollBar:GetMinMaxValues()))
@@ -170,27 +144,132 @@ local function createScrollBar(mainFrame, combatLogFrame)
     return scrollBar
 end
 
-local function createCombatLogFrame(mainFrame, resultInfo)
-    local frame_height = mainFrame:GetHeight() - (RESULT_HEADER_HEIGHT + RESULT_INFO_HEIGHT + 3.5*PADDING)
-    local combatLogFrame = CreateFrame("Frame", "missionHelperCombatLogFrame", mainFrame, "CovenantMissionBaseFrameTemplate")
+local function createCombatLogFrame(mainFrame)
+    local combatLogFrame = CreateFrame("Frame", nil, mainFrame, "CovenantMissionBaseFrameTemplate")
     mainFrame.combatLogFrame = combatLogFrame
-    combatLogFrame:SetPoint("TOPLEFT", resultInfo, "BOTTOMLEFT", 0, -PADDING/2)
-    combatLogFrame:SetSize(mainFrame:GetWidth() - 2*PADDING, frame_height)
-    combatLogFrame.BaseFrameBackground:SetAtlas('adventures-missions-bg-01', false)
-    hideCorners(combatLogFrame)
-    hideBaseCorners(combatLogFrame)
+        combatLogFrame:SetSize(mainFrame:GetWidth() - 2*PADDING, RESULT_INFO_HEIGHT)
+        combatLogFrame:SetPoint("TOP", mainFrame.resultHeader, "BOTTOM", 0, -PADDING/2)
+        combatLogFrame.BaseFrameBackground:SetAtlas('adventures-missions-bg-01', false)
+        hideCorners(combatLogFrame)
+        hideBaseCorners(combatLogFrame)
 
     createScrollingMessageFrame(mainFrame, combatLogFrame)
     createScrollBar(mainFrame, combatLogFrame)
     return combatLogFrame
 end
 
-function MissionHelper:createMissionHelperFrame(...)
+-------------------------------------------
+--- Buttons
+-------------------------------------------
 
-    local mainFrame = createMainFrame()
+local function createPredictButton(frame)
+    local function onClick()
+        MissionHelper:showResult(MissionHelper:simulateFight(true))
+    end
+
+    local function onEnter(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+        GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMRIGHT", 0, 0)
+        GameTooltip_AddNormalLine(GameTooltip, "Simulate mission 50 times to find approximate success rate")
+        GameTooltip:Show()
+    end
+
+    local function onLeave()
+        GameTooltip_Hide()
+    end
+
+    local predictButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    frame.predictButton = predictButton
+        predictButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+        predictButton:SetPoint("LEFT", frame, "CENTER", PADDING/2, 0)
+        predictButton:SetText('Simulate')
+        predictButton:SetMotionScriptsWhileDisabled(true)
+        predictButton:SetScript('onClick', onClick)
+        predictButton:SetScript('onEnter', onEnter)
+        predictButton:SetScript('onLeave', onLeave)
+        predictButton:Hide()
+end
+
+local function createBestDispositionButton(frame)
+    local function onClick(self)
+        if self:IsEnabled() then MissionHelper:findBestDisposition() end
+    end
+
+    local function onEnter(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+        GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMRIGHT", 0, 0)
+
+        if self:IsEnabled() then
+            GameTooltip_AddNormalLine(GameTooltip, "Change the order of your troops to minimize HP loss")
+            GameTooltip_AddColoredLine(GameTooltip, "It shuffles only units on board and doesn't consider others", RED_FONT_COLOR)
+        else
+            GameTooltip_AddColoredLine(GameTooltip, "Addon doesn't support " .. '"Optimize" if units have random abilities', RED_FONT_COLOR)
+        end
+
+        GameTooltip:Show()
+    end
+
+    local function onLeave()
+        GameTooltip_Hide()
+    end
+
+    local BestDispositionButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    frame.BestDispositionButton = BestDispositionButton
+        BestDispositionButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+        BestDispositionButton:SetPoint("RIGHT", frame, "CENTER", -PADDING/2, 0)
+        BestDispositionButton:SetText('Optimize')
+        BestDispositionButton:SetMotionScriptsWhileDisabled(true)
+        BestDispositionButton:SetScript('onClick', onClick)
+        BestDispositionButton:SetScript('onEnter', onEnter)
+        BestDispositionButton:SetScript('onLeave', onLeave)
+        BestDispositionButton:Hide()
+end
+
+local function createButtonsFrame(mainFrame)
+    local buttonsFrame = CreateFrame("Frame", nil, mainFrame)
+    mainFrame.buttonsFrame = buttonsFrame
+        buttonsFrame:SetSize(BUTTONS_FRAME_WIDTH, BUTTONS_FRAME_HEIGHT)
+        buttonsFrame:SetPoint("BOTTOM", mainFrame, "BOTTOM", 0, PADDING/2)
+        buttonsFrame.bg = buttonsFrame:CreateTexture()
+        buttonsFrame.bg:SetAtlas("adventures-rewards-banner", false)
+        buttonsFrame.bg:SetAllPoints(buttonsFrame)
+
+
+    createBestDispositionButton(buttonsFrame)
+    createPredictButton(buttonsFrame)
+end
+
+-------------------------------------------
+--- Tabs
+-------------------------------------------
+
+local function createTabs(mainFrame)
+
+    local ResultTab = CreateFrame("Button", "MissionHelperTab1", mainFrame, "MissionHelperTabButtonTemplate")
+    mainFrame.ResultTab = ResultTab
+        ResultTab:SetID(1)
+        ResultTab:SetPoint("TOPLEFT", mainFrame.resultInfo, "BOTTOMLEFT", PADDING, 0)
+        ResultTab:SetText('Result')
+
+    local CombatLogTab = CreateFrame("Button", "MissionHelperTab2", mainFrame, "MissionHelperTabButtonTemplate")
+    mainFrame.CombatLogTab = CombatLogTab
+        CombatLogTab:SetID(2)
+        CombatLogTab:SetPoint("LEFT", mainFrame.ResultTab, "RIGHT", -15, 0)
+        CombatLogTab:SetText('Combat log')
+
+    MissionHelperFrame_SelectTab(ResultTab)
+end
+
+function MissionHelper:createMissionHelperFrame()
+
+    local mainFrame = editMainFrame()
+    local missionHeader = createMissionHeader(mainFrame)
     local resultHeader = createResultHeader(mainFrame)
     local resultInfo = createResultInfo(mainFrame)
-    local combatLogFrame = createCombatLogFrame(mainFrame, resultInfo)
+    local combatLogFrame = createCombatLogFrame(mainFrame)
+    combatLogFrame:Hide()
+    local buttonsFrame = createButtonsFrame(mainFrame)
+    createTabs(mainFrame)
 
     mainFrame:SetScript("OnMouseWheel", function(self, delta)
         local cur_val = mainFrame.combatLogFrame.CombatLogMessageFrame.ScrollBar:GetValue()
@@ -206,57 +285,17 @@ function MissionHelper:createMissionHelperFrame(...)
     end)
 
     mainFrame:Hide()
-    MissionHelper.missionHelperFrame = mainFrame
     return mainFrame
 
 end
 
-function MissionHelper:editDefaultFrame(...)
+function MissionHelper:editDefaultFrame()
     CovenantMissionFrame:ClearAllPoints()
     CovenantMissionFrame:SetPoint("CENTER", UIParent, "CENTER", -300, 0)
     if CovenantMissionFrame:GetLeft() < PADDING then
-        CovenantMissionFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT",
-                PADDING * CovenantMissionFrame:GetEffectiveScale(), CovenantMissionFrame:GetBottom())
+        CovenantMissionFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 5, CovenantMissionFrame:GetBottom())
     end
-end
-
-function MissionHelper:clearFrames()
-    MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:Clear()
-    MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame.ScrollBar:SetMinMaxValues(0, 10)
-    MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:SetScrollOffset(0)
-    MissionHelper:setResultHeader('')
-    MissionHelper:setResultInfo('')
-    MissionHelper:hidePredictButton()
-    CMH.Board.CombatLog = {}
-    CMH.Board.HiddenCombatLog = {}
-    CMH.Board.CombatLogEvents = {}
-
-end
-
-function MissionHelper:setResultHeader(message)
-    MissionHelper.missionHelperFrame.resultHeader.text:SetText(message)
-end
-
-function MissionHelper:setResultInfo(message)
-    MissionHelper.missionHelperFrame.resultInfo.text:SetText(message)
-end
-
-function MissionHelper:AddCombatLogMessage(message)
-    MissionHelper.missionHelperFrame.combatLogFrame.CombatLogMessageFrame:AddMessage(message)
-end
-
-function MissionHelper:hidePredictButton()
-    MissionHelper.missionHelperFrame.resultInfo.predictButton:Hide()
-end
-
-function MissionHelper:showPredictButton()
-    MissionHelper.missionHelperFrame.resultInfo.predictButton:Show()
-end
-
-function MissionHelper:hideBestDispositionButton()
-    MissionHelper.missionHelperFrame.resultInfo.BestDispositionButton:Hide()
-end
-
-function MissionHelper:showBestDispositionButton()
-    MissionHelper.missionHelperFrame.resultInfo.BestDispositionButton:Show()
+    if LOCALE_ruRU then
+        CovenantMissionFrame.MissionTab.MissionPage.CostFrame.CostLabel:SetFontObject("GameFontNormal")
+    end
 end

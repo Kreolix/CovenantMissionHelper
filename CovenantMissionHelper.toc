@@ -2,6 +2,7 @@
 ## Title: Covenant Mission Helper
 ## Author: Kreolix
 ## Version: 0.1
+## RequiredDep: Blizzard_GarrisonTemplates
 
 DataTables.lua
 CovenantMissionHelper.lua
@@ -11,5 +12,7 @@ Spell.lua
 TargetManager.lua
 Unit.lua
 MetaBoard.lua
+UI.xml
 UI.lua
+MissionHelperFrame.lua
 Checker.lua

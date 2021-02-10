@@ -95,8 +95,8 @@ local function getAllAdjacentEnemies(sourceIndex, targetType, boardUnits, mainTa
             for _, group in ipairs(targetInfo.deadBlockerUnitGroup) do
                 for _, boardIndex in ipairs(group) do
                     if boardUnits[boardIndex] then table.insert(targets, boardIndex) end
-                    if #targets > 0 then return targets end
                 end
+                if #targets > 0 then return targets end
             end
         end
     end

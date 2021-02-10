@@ -1402,7 +1402,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 99,
 			['Period'] = 0,
-			['Points'] = 0.3,
+			['Points'] = 1,
 			['SpellID'] = 71,
 			['TargetType'] = 2
 		}
