@@ -206,8 +206,8 @@ MissionHelper:RegisterEvent("ADDON_LOADED")
 MissionHelper:SetScript("OnEvent", MissionHelper.ADDON_LOADED)
 
 function CMH:log(msg)
+    table.insert(CMH.Board.CombatLog, msg)
     if CMH.isDebug then
-        table.insert(CMH.Board.CombatLog, msg)
         table.insert(CMH.Board.HiddenCombatLog, msg)
     end
 end
