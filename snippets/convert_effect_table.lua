@@ -1,3 +1,4 @@
+-- 9.0.5.37988
 local spell_effects = {
   [1]={["ID"]=1,["SpellID"]=1,["EffectIndex"]=0,["Effect"]=1,["Points"]=350,["TargetType"]=24,["Flags"]=1,["Period"]=0},
   [2]={["ID"]=2,["SpellID"]=2,["EffectIndex"]=0,["Effect"]=19,["Points"]=0.2,["TargetType"]=22,["Flags"]=1,["Period"]=2},
@@ -119,19 +120,19 @@ local spell_effects = {
   [118]={["ID"]=123,["SpellID"]=88,["EffectIndex"]=1,["Effect"]=3,["Points"]=0.4,["TargetType"]=7,["Flags"]=1,["Period"]=0},
   [119]={["ID"]=124,["SpellID"]=89,["EffectIndex"]=0,["Effect"]=7,["Points"]=0.4,["TargetType"]=5,["Flags"]=3,["Period"]=1},
   [120]={["ID"]=125,["SpellID"]=90,["EffectIndex"]=0,["Effect"]=12,["Points"]=0.2,["TargetType"]=8,["Flags"]=0,["Period"]=0},
-  [121]={["ID"]=126,["SpellID"]=91,["EffectIndex"]=0,["Effect"]=11,["Points"]=-0.6,["TargetType"]=5,["Flags"]=1,["Period"]=0},
-  [122]={["ID"]=127,["SpellID"]=92,["EffectIndex"]=0,["Effect"]=7,["Points"]=0.4,["TargetType"]=17,["Flags"]=3,["Period"]=1},
+  [121]={["ID"]=126,["SpellID"]=91,["EffectIndex"]=0,["Effect"]=19,["Points"]=-0.6,["TargetType"]=5,["Flags"]=1,["Period"]=0},
+  [122]={["ID"]=127,["SpellID"]=92,["EffectIndex"]=0,["Effect"]=7,["Points"]=0.5,["TargetType"]=17,["Flags"]=3,["Period"]=1},
   [123]={["ID"]=128,["SpellID"]=93,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.2,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [124]={["ID"]=129,["SpellID"]=93,["EffectIndex"]=1,["Effect"]=4,["Points"]=0.8,["TargetType"]=1,["Flags"]=1,["Period"]=0},
   [125]={["ID"]=130,["SpellID"]=94,["EffectIndex"]=0,["Effect"]=7,["Points"]=0.3,["TargetType"]=15,["Flags"]=1,["Period"]=1},
-  [126]={["ID"]=131,["SpellID"]=95,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.2,["TargetType"]=5,["Flags"]=1,["Period"]=0},
-  [127]={["ID"]=132,["SpellID"]=95,["EffectIndex"]=1,["Effect"]=3,["Points"]=0.3,["TargetType"]=17,["Flags"]=1,["Period"]=0},
-  [128]={["ID"]=133,["SpellID"]=96,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.4,["TargetType"]=5,["Flags"]=1,["Period"]=0},
-  [129]={["ID"]=134,["SpellID"]=96,["EffectIndex"]=1,["Effect"]=12,["Points"]=-0.2,["TargetType"]=5,["Flags"]=0,["Period"]=0},
+  [126]={["ID"]=131,["SpellID"]=95,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.5,["TargetType"]=5,["Flags"]=1,["Period"]=0},
+  [127]={["ID"]=132,["SpellID"]=95,["EffectIndex"]=1,["Effect"]=3,["Points"]=0.4,["TargetType"]=17,["Flags"]=1,["Period"]=0},
+  [128]={["ID"]=133,["SpellID"]=96,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.6,["TargetType"]=5,["Flags"]=1,["Period"]=0},
+  [129]={["ID"]=134,["SpellID"]=96,["EffectIndex"]=1,["Effect"]=12,["Points"]=-0.3,["TargetType"]=5,["Flags"]=0,["Period"]=0},
   [130]={["ID"]=135,["SpellID"]=97,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.9,["TargetType"]=11,["Flags"]=1,["Period"]=0},
   [131]={["ID"]=136,["SpellID"]=98,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.2,["TargetType"]=5,["Flags"]=1,["Period"]=0},
   [132]={["ID"]=137,["SpellID"]=99,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.4,["TargetType"]=15,["Flags"]=1,["Period"]=0},
-  [133]={["ID"]=138,["SpellID"]=100,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.4,["TargetType"]=1,["Flags"]=1,["Period"]=0},
+  [133]={["ID"]=138,["SpellID"]=100,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.6,["TargetType"]=1,["Flags"]=1,["Period"]=0},
   [134]={["ID"]=139,["SpellID"]=101,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.6,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [135]={["ID"]=140,["SpellID"]=101,["EffectIndex"]=1,["Effect"]=14,["Points"]=0.2,["TargetType"]=3,["Flags"]=0,["Period"]=0},
   [136]={["ID"]=141,["SpellID"]=102,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.3,["TargetType"]=13,["Flags"]=1,["Period"]=0},
@@ -144,13 +145,13 @@ local spell_effects = {
   [143]={["ID"]=148,["SpellID"]=107,["EffectIndex"]=1,["Effect"]=20,["Points"]=0.3,["TargetType"]=3,["Flags"]=3,["Period"]=0},
   [144]={["ID"]=149,["SpellID"]=108,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.4,["TargetType"]=2,["Flags"]=1,["Period"]=0},
   [145]={["ID"]=150,["SpellID"]=108,["EffectIndex"]=1,["Effect"]=18,["Points"]=0.1,["TargetType"]=2,["Flags"]=2,["Period"]=0},
-  [146]={["ID"]=151,["SpellID"]=109,["EffectIndex"]=0,["Effect"]=16,["Points"]=0.6,["TargetType"]=0,["Flags"]=1,["Period"]=0},
+  [146]={["ID"]=151,["SpellID"]=109,["EffectIndex"]=0,["Effect"]=16,["Points"]=0.6,["TargetType"]=1,["Flags"]=1,["Period"]=0},
   [147]={["ID"]=152,["SpellID"]=110,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.4,["TargetType"]=1,["Flags"]=1,["Period"]=0},
   [148]={["ID"]=153,["SpellID"]=111,["EffectIndex"]=0,["Effect"]=3,["Points"]=1,["TargetType"]=15,["Flags"]=1,["Period"]=0},
   [149]={["ID"]=154,["SpellID"]=112,["EffectIndex"]=0,["Effect"]=19,["Points"]=0.3,["TargetType"]=8,["Flags"]=3,["Period"]=0},
   [150]={["ID"]=155,["SpellID"]=113,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.2,["TargetType"]=11,["Flags"]=1,["Period"]=0},
   [151]={["ID"]=156,["SpellID"]=114,["EffectIndex"]=0,["Effect"]=2,["Points"]=0.6,["TargetType"]=1,["Flags"]=1,["Period"]=0},
-  [152]={["ID"]=157,["SpellID"]=115,["EffectIndex"]=0,["Effect"]=1,["Points"]=0.5,["TargetType"]=9,["Flags"]=1,["Period"]=0},
+  [152]={["ID"]=157,["SpellID"]=115,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.7,["TargetType"]=9,["Flags"]=1,["Period"]=0},
   [153]={["ID"]=158,["SpellID"]=116,["EffectIndex"]=0,["Effect"]=3,["Points"]=1.2,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [154]={["ID"]=159,["SpellID"]=117,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.4,["TargetType"]=15,["Flags"]=1,["Period"]=0},
   [155]={["ID"]=160,["SpellID"]=118,["EffectIndex"]=0,["Effect"]=3,["Points"]=2,["TargetType"]=5,["Flags"]=1,["Period"]=0},
@@ -253,9 +254,9 @@ local spell_effects = {
   [252]={["ID"]=257,["SpellID"]=196,["EffectIndex"]=1,["Effect"]=3,["Points"]=0.9,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [253]={["ID"]=258,["SpellID"]=196,["EffectIndex"]=2,["Effect"]=3,["Points"]=0.6,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [254]={["ID"]=259,["SpellID"]=196,["EffectIndex"]=3,["Effect"]=3,["Points"]=0.3,["TargetType"]=3,["Flags"]=1,["Period"]=0},
-  [255]={["ID"]=260,["SpellID"]=197,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.5,["TargetType"]=8,["Flags"]=1,["Period"]=0},
-  [256]={["ID"]=261,["SpellID"]=198,["EffectIndex"]=0,["Effect"]=13,["Points"]=-0.5,["TargetType"]=1,["Flags"]=1,["Period"]=0},
-  [257]={["ID"]=262,["SpellID"]=198,["EffectIndex"]=1,["Effect"]=16,["Points"]=0.5,["TargetType"]=1,["Flags"]=1,["Period"]=0},
+  [255]={["ID"]=260,["SpellID"]=197,["EffectIndex"]=0,["Effect"]=4,["Points"]=0.55,["TargetType"]=8,["Flags"]=1,["Period"]=0},
+  [256]={["ID"]=261,["SpellID"]=198,["EffectIndex"]=0,["Effect"]=20,["Points"]=-0.6,["TargetType"]=1,["Flags"]=3,["Period"]=0},
+  [257]={["ID"]=262,["SpellID"]=198,["EffectIndex"]=1,["Effect"]=16,["Points"]=0.6,["TargetType"]=1,["Flags"]=1,["Period"]=0},
   [258]={["ID"]=263,["SpellID"]=199,["EffectIndex"]=0,["Effect"]=3,["Points"]=1,["TargetType"]=15,["Flags"]=1,["Period"]=0},
   [259]={["ID"]=264,["SpellID"]=200,["EffectIndex"]=0,["Effect"]=3,["Points"]=1,["TargetType"]=3,["Flags"]=1,["Period"]=0},
   [260]={["ID"]=265,["SpellID"]=200,["EffectIndex"]=1,["Effect"]=12,["Points"]=-0.5,["TargetType"]=3,["Flags"]=0,["Period"]=1},
@@ -378,7 +379,8 @@ local spell_effects = {
   [377]={["ID"]=383,["SpellID"]=300,["EffectIndex"]=0,["Effect"]=7,["Points"]=0.05,["TargetType"]=23,["Flags"]=1,["Period"]=1},
   [378]={["ID"]=384,["SpellID"]=301,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.1,["TargetType"]=20,["Flags"]=0,["Period"]=0},
   [379]={["ID"]=385,["SpellID"]=302,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.2,["TargetType"]=7,["Flags"]=1,["Period"]=2},
-  [380]={["ID"]=386,["SpellID"]=302,["EffectIndex"]=1,["Effect"]=12,["Points"]=-0.2,["TargetType"]=7,["Flags"]=1,["Period"]=0}
+  [380]={["ID"]=386,["SpellID"]=302,["EffectIndex"]=1,["Effect"]=12,["Points"]=-0.2,["TargetType"]=7,["Flags"]=1,["Period"]=0},
+  [381]={["ID"]=387,["SpellID"]=303,["EffectIndex"]=0,["Effect"]=3,["Points"]=0.25,["TargetType"]=17,["Flags"]=1,["Period"]=0}
 }
 
 
@@ -522,9 +524,7 @@ end
 
 -- для spellID = 17 надо убрать эффект с типом = 0 и заменить в хиле points с 100 на 1
 -- для spellID = 15 points = 1
--- spellId = 109 по описанию target = self
 -- spellID = 125 по описанию target = random enemy. Пока удалю
--- spellID = 91, effect = 11. Вообще не работает
 -- spellID = 104, effectID = 143. Почему-то хилит больше, чем есть в БД
 -- spellID = 71, effectID = 99. Почему-то хилит больше, чем есть в БД
 
@@ -546,10 +546,6 @@ for spellID, effects in pairs(new_table) do
   elseif spellID == 15 then
     effects[1].Points = 1
 
-  elseif spellID == 109 then
-    for i, effect in pairs(effects) do
-      if effect.TargetType == 0 then effect.TargetType = 1 end
-    end
   elseif spellID == 104 then
     for i, effect in pairs(effects) do
       if effect.ID == 143 then effect.Points = 1 end

@@ -165,12 +165,13 @@ end
 local function createPredictButton(frame)
     local function onClick()
         MissionHelper:showResult(MissionHelper:simulateFight(true))
+        collectgarbage("collect")
     end
 
     local function onEnter(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
         GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMRIGHT", 0, 0)
-        GameTooltip_AddNormalLine(GameTooltip, "Simulate mission 50 times to find approximate success rate")
+        GameTooltip_AddNormalLine(GameTooltip, "Simulate mission 100 times to find approximate success rate")
         GameTooltip:Show()
     end
 
@@ -294,8 +295,5 @@ function MissionHelper:editDefaultFrame()
     CovenantMissionFrame:SetPoint("CENTER", UIParent, "CENTER", -300, 0)
     if CovenantMissionFrame:GetLeft() < PADDING then
         CovenantMissionFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 5, CovenantMissionFrame:GetBottom())
-    end
-    if LOCALE_ruRU then
-        CovenantMissionFrame.MissionTab.MissionPage.CostFrame.CostLabel:SetFontObject("GameFontNormal")
     end
 end

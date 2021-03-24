@@ -1,4 +1,4 @@
-## Interface: 90002
+## Interface: 90005
 ## Title: Covenant Mission Helper
 ## Author: Kreolix
 ## Version: 0.1

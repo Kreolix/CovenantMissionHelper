@@ -66,7 +66,7 @@ function Unit:setSpells(autoCombatSpells)
 
     for _, autoCombatSpell in pairs(autoCombatSpells) do
         --broken spells
-        if autoCombatSpell.autoCombatSpellID ~= 91 and autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
+        if autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
             table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
         end
     end

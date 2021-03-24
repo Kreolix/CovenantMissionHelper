@@ -308,8 +308,8 @@ DataTables.UnusualAttackType = {
 	[1323] = 11, [1324] = 11, [3852840] = 11, [3852830] = 11, [3852829] = 11, [3852831] = 11, [3852834] = 11,
 	[3852908] = 11, [3580935] = 11,
 	-- ranged_magic
-	[175299] = 11, [3852909] = 11, [3852843] = 11, [3852835] = 11, [3583223] = 11,
-	[3856480] = 11, [3921251] = 11, [175948] = 11,
+	[175299] = 11, [3852909] = 11, [3852843] = 11, [3583223] = 11,
+	[3856480] = 11, [175948] = 11,
 	-- heal_support
 	[3517256] = 11, [1212] = 11, [1258] = 11, [1311] = 11, [3852839] = 11, [3852877] = 11, [3852848] = 11,
 	[3852889] = 11, [3485232] = 11, [165562] = 11, [3684894] = 11, [3852627] = 11
@@ -1687,7 +1687,7 @@ DataTables.SpellEffects = {
 	},
 	[91] = {
 		[1] = {
-			['Effect'] = 11,
+			['Effect'] = 19,
 			['EffectIndex'] = 0,
 			['Flags'] = 1,
 			['ID'] = 126,
@@ -1704,7 +1704,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 3,
 			['ID'] = 127,
 			['Period'] = 1,
-			['Points'] = 0.4,
+			['Points'] = 0.5,
 			['SpellID'] = 92,
 			['TargetType'] = 17
 		}
@@ -1750,7 +1750,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 131,
 			['Period'] = 0,
-			['Points'] = 1.2,
+			['Points'] = 1.5,
 			['SpellID'] = 95,
 			['TargetType'] = 5
 		},
@@ -1760,7 +1760,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 132,
 			['Period'] = 0,
-			['Points'] = 0.3,
+			['Points'] = 0.4,
 			['SpellID'] = 95,
 			['TargetType'] = 17
 		}
@@ -1772,7 +1772,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 133,
 			['Period'] = 0,
-			['Points'] = 0.4,
+			['Points'] = 0.6,
 			['SpellID'] = 96,
 			['TargetType'] = 5
 		},
@@ -1782,7 +1782,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 0,
 			['ID'] = 134,
 			['Period'] = 0,
-			['Points'] = -0.2,
+			['Points'] = -0.3,
 			['SpellID'] = 96,
 			['TargetType'] = 5
 		}
@@ -1830,7 +1830,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 138,
 			['Period'] = 0,
-			['Points'] = 0.4,
+			['Points'] = 0.6,
 			['SpellID'] = 100,
 			['TargetType'] = 1
 		}
@@ -2045,12 +2045,12 @@ DataTables.SpellEffects = {
 	},
 	[115] = {
 		[1] = {
-			['Effect'] = 1,
+			['Effect'] = 3,
 			['EffectIndex'] = 0,
 			['Flags'] = 1,
 			['ID'] = 157,
 			['Period'] = 0,
-			['Points'] = 0.5,
+			['Points'] = 0.7,
 			['SpellID'] = 115,
 			['TargetType'] = 9
 		}
@@ -3244,19 +3244,19 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 260,
 			['Period'] = 0,
-			['Points'] = 0.5,
+			['Points'] = 0.55,
 			['SpellID'] = 197,
 			['TargetType'] = 8
 		}
 	},
 	[198] = {
 		[1] = {
-			['Effect'] = 13,
+			['Effect'] = 20,
 			['EffectIndex'] = 0,
-			['Flags'] = 1,
+			['Flags'] = 3,
 			['ID'] = 261,
 			['Period'] = 0,
-			['Points'] = -0.5,
+			['Points'] = -0.6,
 			['SpellID'] = 198,
 			['TargetType'] = 1
 		},
@@ -3266,7 +3266,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 262,
 			['Period'] = 0,
-			['Points'] = 0.5,
+			['Points'] = 0.6,
 			['SpellID'] = 198,
 			['TargetType'] = 1
 		}
@@ -4707,6 +4707,18 @@ DataTables.SpellEffects = {
 			['Points'] = -0.2,
 			['SpellID'] = 302,
 			['TargetType'] = 7
+		}
+	},
+	[303] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 387,
+			['Period'] = 0,
+			['Points'] = 0.25,
+			['SpellID'] = 303,
+			['TargetType'] = 17
 		}
 	}
 }

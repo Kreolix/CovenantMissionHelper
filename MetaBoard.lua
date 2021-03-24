@@ -30,6 +30,8 @@ local function get_subs(numbers)
     return result
 end
 
+local SUBS = get_subs({0, 1, 2, 3, 4})
+
 function MetaBoard:new(missionPage, isCalcRandom)
     local newObj = {
         baseBoard = CMH.Board:new(missionPage, isCalcRandom)
@@ -52,9 +54,9 @@ function MetaBoard:findBestDisposition()
             end
         end
 
-        CMH.Board.CombatLog = {}
-        CMH.Board.HiddenCombatLog = {}
-        CMH.Board.CombatLogEvents = {}
+        wipe(CMH.Board.CombatLog)
+        wipe(CMH.Board.HiddenCombatLog)
+        wipe(CMH.Board.CombatLogEvents)
     end
 
     return next(bestBoard) ~= nil and bestBoard or self.baseBoard
@@ -64,7 +66,7 @@ function MetaBoard:findBestDispositionIterator()
     -- unique subs only
     local hash = {}
     local numbers = {}
-    local subs = get_subs({0, 1, 2, 3, 4})
+    local subs = SUBS
 
     return function ()
         for _, sub in ipairs(subs) do
