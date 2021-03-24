@@ -28,17 +28,21 @@ end
 
 
 function MissionHelper:addRound()
-    table.insert(CombatLogEvents, {events = {}})
+    if CMH.isDebug then
+        table.insert(CombatLogEvents, {events = {}})
+    end
     --print('round ' .. #CombatLogEvents)
 end
 
 function MissionHelper:addEvent(spellID, effectType, casterBoardIndex, targetInfo)
-    table.insert(CombatLogEvents[#CombatLogEvents].events, {
-                casterBoardIndex = casterBoardIndex,
-                spellID = spellID,
-                type = getBlizzardEventType(effectType, spellID),
-                targetInfo = targetInfo
-            })
+    if CMH.isDebug then
+        table.insert(CombatLogEvents[#CombatLogEvents].events, {
+            casterBoardIndex = casterBoardIndex,
+            spellID = spellID,
+            type = getBlizzardEventType(effectType, spellID),
+            targetInfo = targetInfo
+        })
+    end
     --print('event ' .. #CombatLogEvents[#CombatLogEvents].events)
 end
 

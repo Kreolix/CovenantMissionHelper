@@ -3,6 +3,7 @@ local hooksecurefunc = _G["hooksecurefunc"]
 
 MissionHelper = CreateFrame("Frame", "MissionHelper", UIParent)
 MissionHelper.isLoaded = false
+CMH.isDebug = false
 
 local function registerHook()
     -- open/close mission
@@ -34,7 +35,19 @@ function MissionHelper:ADDON_LOADED(event, addon)
 end
 
 function MissionHelper:hookShowMission(...)
-    --print('hook show mission')
+    -- blizz UI scaling runs somewhere after ADDON_LOADED,
+    -- It's bad solution, but fast bug fix
+    if math.abs(MissionHelperFrame:GetScale() - CovenantMissionFrame:GetScale()) < 0.0001 then
+        MissionHelperFrame.missionHeader:Hide()
+        MissionHelperFrame.resultHeader:Hide()
+        MissionHelperFrame.resultInfo:Hide()
+        MissionHelperFrame.missionHeader:Hide()
+        MissionHelperFrame.buttonsFrame:Hide()
+        MissionHelperFrame.ResultTab:Hide()
+        MissionHelperFrame.CombatLogTab:Hide()
+        MissionHelperFrame:SetScale(CovenantMissionFrame:GetScale())
+        MissionHelper:createMissionHelperFrame()
+    end
     local missionPage = CovenantMissionFrame:GetMissionPage()
     local missionInfo = missionPage.missionInfo
     MissionHelperFrame:clearFrames()
@@ -131,7 +144,7 @@ function MissionHelper:hookShowRewardScreen(...)
     -- my events log cleared somewhere. run it another time to compare blizz and my log
     --board:simulate()
     --board.CombatLogEvents = CMH.Board.CombatLogEvents
-    board.compareLogs = MissionHelper:compareLogs(board.CombatLogEvents, board.blizzardLog)
+    --board.compareLogs = MissionHelper:compareLogs(board.CombatLogEvents, board.blizzardLog)
 end
 
 function MissionHelper:clearBoard(missionPage)
@@ -148,6 +161,7 @@ function MissionHelper:hookCloseMission(...)
     --print('hook close mission')
     MissionHelperFrame:clearFrames()
     MissionHelperFrame:Hide()
+    collectgarbage("collect")
     return ...
 end
 
@@ -192,10 +206,14 @@ MissionHelper:RegisterEvent("ADDON_LOADED")
 MissionHelper:SetScript("OnEvent", MissionHelper.ADDON_LOADED)
 
 function CMH:log(msg)
-    table.insert(CMH.Board.CombatLog, msg)
-    table.insert(CMH.Board.HiddenCombatLog, msg)
+    if CMH.isDebug then
+        table.insert(CMH.Board.CombatLog, msg)
+        table.insert(CMH.Board.HiddenCombatLog, msg)
+    end
 end
 
 function CMH:debug_log(msg)
-    table.insert(CMH.Board.HiddenCombatLog, msg)
+    if CMH.isDebug then
+        table.insert(CMH.Board.HiddenCombatLog, msg)
+    end
 end

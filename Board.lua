@@ -121,19 +121,19 @@ function Board:new(missionPage, isCalcRandom)
     return newObj
 end
 
+local boardForSimulate = {}
 function Board:simulate()
     if self.isEmpty then return end
 
     if self.hasRandomSpells and self.isCalcRandom then
-        local new_board = {}
         local win_count = 0
         for i = 1, SIMULATE_ITERATIONS do
-            new_board = copy(self)
-            new_board:fight()
-            if new_board:isWin() then win_count = win_count + 1 end
-            CMH.Board.CombatLog = {}
-            CMH.Board.HiddenCombatLog = {}
-            CMH.Board.CombatLogEvents = {}
+            boardForSimulate = copy(self)
+            boardForSimulate:fight()
+            if boardForSimulate:isWin() then win_count = win_count + 1 end
+            wipe(CMH.Board.CombatLog)
+            wipe(CMH.Board.HiddenCombatLog)
+            wipe(CMH.Board.CombatLogEvents)
         end
         self.probability = math.floor(100 * win_count/SIMULATE_ITERATIONS)
     elseif self.hasRandomSpells then

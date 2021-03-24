@@ -27,9 +27,9 @@ function MissionHelperFrame:clearFrames()
         reward:Hide()
     end
     --self.missionHeader.Rewards = {self.missionHeader.Rewards[1]}
-    CMH.Board.CombatLog = {}
-    CMH.Board.HiddenCombatLog = {}
-    CMH.Board.CombatLogEvents = {}
+    wipe(CMH.Board.CombatLog)
+    wipe(CMH.Board.HiddenCombatLog)
+    wipe(CMH.Board.CombatLogEvents)
 end
 
 function MissionHelperFrame:setResultHeader(message)
