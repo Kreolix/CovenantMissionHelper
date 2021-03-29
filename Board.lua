@@ -1,4 +1,5 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
+local L = MissionHelper.L
 
 local SIMULATE_ITERATIONS = 100
 local MAX_ROUNDS = 100
@@ -147,7 +148,7 @@ function Board:fight()
     local round = 1
     while self.isMissionOver == false and round < self.max_rounds do
         CMH:log('\n')
-        CMH:log("|c0000FF33Round " .. round .. "|r")
+        CMH:log(GREEN_FONT_COLOR:WrapTextInColorCode(L["Round"] .. ' ' .. round))
         MissionHelper:addRound()
         local turnOrder = self:getTurnOrder()
 
@@ -329,7 +330,8 @@ end
 function Board:onUnitTakeDamage(spellID, casterBoardIndex, eventTargetInfo)
     if eventTargetInfo.newHealth == 0 then
         MissionHelper:addEvent(spellID, CMH.DataTables.EffectTypeEnum.Died, casterBoardIndex, {eventTargetInfo})
-        CMH:log(string.format('|cFFFF7700 %s kill %s |r', self.units[casterBoardIndex].name, self.units[eventTargetInfo.boardIndex].name))
+        CMH:log(ORANGE_FONT_COLOR:WrapTextInColorCode(string.format('%s %s %s ',
+                self.units[casterBoardIndex].name, L['kill'], self.units[eventTargetInfo.boardIndex].name)))
         self.isMissionOver = self:checkMissionOver()
     end
 end
@@ -353,7 +355,7 @@ end
 
 function Board:getMyTeam()
     local function constructString(unit, isWin)
-        local result = unit.name .. '. HP = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
+        local result = unit.name .. L['.'] .. ' ' .. L['HP'] .. ' = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
         --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
         if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
         if unit.currentHealth == 0 then result = SKULL_ICON .. result end
@@ -361,13 +363,14 @@ function Board:getMyTeam()
     end
 
     if self.hasRandomSpells and self.isCalcRandom == false then
-        return "Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."
+        return L["Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."]
     end
 
     local isWin = self:isWin()
     local lostHP = self:getTotalLostHP(true)
-    local loseOrGain = lostHP >= 0 and 'LOST' or 'RECEIVED'
-    local warningText = self.hasRandomSpells and "|cFFFF0000Units have random abilities. Actual rest HP may not be the same as predicted|r\n" or ''
+    local loseOrGain = lostHP >= 0 and L['LOST'] or L['RECEIVED']
+    local warningText = self.hasRandomSpells and RED_FONT_COLOR:WrapTextInColorCode(
+            L["Units have random abilities. Actual rest HP may not be the same as predicted"]) or ''
 
     local text = ''
     for i = 0, 4 do
@@ -375,27 +378,28 @@ function Board:getMyTeam()
             text = text .. constructString(self.units[i], isWin)
         end
     end
-    text = string.format("%sMy units:\n%s \n\nTOTAL %s HP = %s", warningText, text, loseOrGain, math.abs(lostHP))
+    text = string.format("%s\n%s:\n%s \n\n%s %s %s = %s",
+            warningText, L['My units'], text, L['TOTAL'], loseOrGain, L['HP'], math.abs(lostHP))
 
     return text
 end
 
 function Board:constructResultString()
     if self.isEmpty then
-        return 'Add units on board'
+        return L['Add units on board']
     elseif self.hasRandomSpells and self.isCalcRandom == false then
         return ''
     elseif not self.isMissionOver then
-        return string.format('|cFFFF0000More than %s rounds. Winner is undefined|r', self.max_rounds)
+        return RED_FONT_COLOR:WrapTextInColorCode(string.format(L['More than %s rounds. Winner is undefined'], self.max_rounds))
     end
 
     local result = self:isWin()
     if self.probability == 100 and result then
-        return '|cFF00FF00 Predicted result: WIN |r'
+        return GREEN_FONT_COLOR:WrapTextInColorCode(L['WIN'])
     elseif self.probability == 0 or (result == false and self.probability == 100) then
-        return '|cFFFF0000 Predicted result: LOSE |r'
+        return RED_FONT_COLOR:WrapTextInColorCode(L['LOSE'])
     else
-        return string.format('|cFFFF7700 Predicted result: WIN (~%s%%) |r', self.probability)
+        return ORANGE_FONT_COLOR:WrapTextInColorCode(string.format(L['WIN'] .. ' (~%s%%)', self.probability))
     end
 end
 

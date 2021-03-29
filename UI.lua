@@ -1,5 +1,6 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
 local MissionHelper = _G["MissionHelper"]
+local L = MissionHelper.L
 
 local MAX_FRAME_WIDTH = 500
 local PADDING = 20
@@ -8,7 +9,7 @@ local BUTTONS_FRAME_WIDTH = 300
 local BUTTONS_FRAME_HEIGHT = 40
 local RESULT_HEADER_WIDTH = 300
 local RESULT_HEADER_HEIGHT = 30
-local RESULT_INFO_HEIGHT = 400
+local MAX_RESULT_INFO_HEIGHT = 400
 local SCROLL_BAR_WIDTH = 10
 local BUTTON_WIDTH = 120
 local BUTTON_HEIGHT = 25
@@ -28,14 +29,23 @@ local function hideBaseCorners(frame)
 end
 
 local function editMainFrame()
+    local frame  = _G["MissionHelperFrame"]
+
+    -- Blizz frame doesn't scale more then x1. But now it's EffectiveScale = value in user settings. (for example, 1.15)
+    -- Somewhere after ADDON_LOADED blizz changes CovenantMissionFrame.EffectiveScale to ~1.
+    -- Here I set my frame's set EffectiveScale = 1 (if needed) and calculate correct width.
+    if CovenantMissionFrame:GetEffectiveScale() > 1 then frame:SetScale(1/CovenantMissionFrame:GetEffectiveScale()) end
+    local scaleFix = math.max(1, CovenantMissionFrame:GetEffectiveScale())
     local mainFrameWidth = math.min(
-            GetScreenWidth() * UIParent:GetEffectiveScale() - (CovenantMissionFrame:GetRight() * CovenantMissionFrame:GetEffectiveScale()) - 2,
+            scaleFix * (GetScreenWidth() - CovenantMissionFrame:GetRight()/scaleFix) - 10,
             MAX_FRAME_WIDTH
     )
-    local frame  = _G["MissionHelperFrame"]
-        frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT", 0, 0)
+
+
+        frame:ClearAllPoints()
+        frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT", 2, 2)
         frame:SetClampedToScreen(true)
-        frame:SetSize(mainFrameWidth, CovenantMissionFrame:GetHeight())
+        frame:SetSize(mainFrameWidth, CovenantMissionFrame:GetHeight() + 4)
         frame:EnableMouse(true)
         frame:EnableMouseWheel(true)
         frame.BaseFrameBackground:SetAtlas('adventures-missions-bg-02', false)
@@ -93,7 +103,8 @@ end
 local function createResultInfo(mainFrame)
     local resultInfo = CreateFrame("Frame", nil, mainFrame, "CovenantMissionBaseFrameTemplate")
     mainFrame.resultInfo = resultInfo
-        resultInfo:SetSize(mainFrame:GetWidth() - 2*PADDING, RESULT_INFO_HEIGHT)
+        local frame_height = min(MAX_RESULT_INFO_HEIGHT, mainFrame.resultHeader:GetBottom() - mainFrame:GetBottom() - BUTTONS_FRAME_HEIGHT - 3*PADDING)
+        resultInfo:SetSize(mainFrame:GetWidth() - 2*PADDING, frame_height)
         resultInfo:SetPoint("TOP", mainFrame.resultHeader, "BOTTOM", 0, -PADDING/2)
         hideBaseCorners(resultInfo)
         hideCorners(resultInfo)
@@ -147,7 +158,7 @@ end
 local function createCombatLogFrame(mainFrame)
     local combatLogFrame = CreateFrame("Frame", nil, mainFrame, "CovenantMissionBaseFrameTemplate")
     mainFrame.combatLogFrame = combatLogFrame
-        combatLogFrame:SetSize(mainFrame:GetWidth() - 2*PADDING, RESULT_INFO_HEIGHT)
+        combatLogFrame:SetSize(mainFrame:GetWidth() - 2*PADDING, mainFrame.resultInfo:GetHeight())
         combatLogFrame:SetPoint("TOP", mainFrame.resultHeader, "BOTTOM", 0, -PADDING/2)
         combatLogFrame.BaseFrameBackground:SetAtlas('adventures-missions-bg-01', false)
         hideCorners(combatLogFrame)
@@ -165,13 +176,12 @@ end
 local function createPredictButton(frame)
     local function onClick()
         MissionHelper:showResult(MissionHelper:simulateFight(true))
-        collectgarbage("collect")
     end
 
     local function onEnter(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
         GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMRIGHT", 0, 0)
-        GameTooltip_AddNormalLine(GameTooltip, "Simulate mission 100 times to find approximate success rate")
+        GameTooltip_AddNormalLine(GameTooltip, L["Simulate mission 100 times to find approximate success rate"])
         GameTooltip:Show()
     end
 
@@ -183,7 +193,7 @@ local function createPredictButton(frame)
     frame.predictButton = predictButton
         predictButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
         predictButton:SetPoint("LEFT", frame, "CENTER", PADDING/2, 0)
-        predictButton:SetText('Simulate')
+        predictButton:SetText(L['Simulate'])
         predictButton:SetMotionScriptsWhileDisabled(true)
         predictButton:SetScript('onClick', onClick)
         predictButton:SetScript('onEnter', onEnter)
@@ -201,10 +211,10 @@ local function createBestDispositionButton(frame)
         GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMRIGHT", 0, 0)
 
         if self:IsEnabled() then
-            GameTooltip_AddNormalLine(GameTooltip, "Change the order of your troops to minimize HP loss")
-            GameTooltip_AddColoredLine(GameTooltip, "It shuffles only units on board and doesn't consider others", RED_FONT_COLOR)
+            GameTooltip_AddNormalLine(GameTooltip, L["Change the order of your troops to minimize HP loss"])
+            GameTooltip_AddColoredLine(GameTooltip, L["It shuffles only units on board and doesn't consider others"], RED_FONT_COLOR)
         else
-            GameTooltip_AddColoredLine(GameTooltip, "Addon doesn't support " .. '"Optimize" if units have random abilities', RED_FONT_COLOR)
+            GameTooltip_AddColoredLine(GameTooltip, L["Addon doesn't support "] .. L['"Optimize" if units have random abilities'], RED_FONT_COLOR)
         end
 
         GameTooltip:Show()
@@ -218,7 +228,7 @@ local function createBestDispositionButton(frame)
     frame.BestDispositionButton = BestDispositionButton
         BestDispositionButton:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
         BestDispositionButton:SetPoint("RIGHT", frame, "CENTER", -PADDING/2, 0)
-        BestDispositionButton:SetText('Optimize')
+        BestDispositionButton:SetText(L['Optimize'])
         BestDispositionButton:SetMotionScriptsWhileDisabled(true)
         BestDispositionButton:SetScript('onClick', onClick)
         BestDispositionButton:SetScript('onEnter', onEnter)
@@ -250,13 +260,13 @@ local function createTabs(mainFrame)
     mainFrame.ResultTab = ResultTab
         ResultTab:SetID(1)
         ResultTab:SetPoint("TOPLEFT", mainFrame.resultInfo, "BOTTOMLEFT", PADDING, 0)
-        ResultTab:SetText('Result')
+        ResultTab:SetText(L['Result'])
 
     local CombatLogTab = CreateFrame("Button", "MissionHelperTab2", mainFrame, "MissionHelperTabButtonTemplate")
     mainFrame.CombatLogTab = CombatLogTab
         CombatLogTab:SetID(2)
         CombatLogTab:SetPoint("LEFT", mainFrame.ResultTab, "RIGHT", -15, 0)
-        CombatLogTab:SetText('Combat log')
+        CombatLogTab:SetText(L['Combat log'])
 
     MissionHelperFrame_SelectTab(ResultTab)
 end
@@ -292,8 +302,5 @@ end
 
 function MissionHelper:editDefaultFrame()
     CovenantMissionFrame:ClearAllPoints()
-    CovenantMissionFrame:SetPoint("CENTER", UIParent, "CENTER", -300, 0)
-    if CovenantMissionFrame:GetLeft() < PADDING then
-        CovenantMissionFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 5, CovenantMissionFrame:GetBottom())
-    end
+    CovenantMissionFrame:SetPoint("LEFT", UIParent, "LEFT", math.max(5, CovenantMissionFrame:GetLeft() - 300), 0)
 end

@@ -1,5 +1,6 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
 local MissionHelperFrame = _G["MissionHelperFrame"]
+local L = MissionHelper.L
 
 function MissionHelperFrame:updateMissionHeader(missionInfo)
     self.missionHeader.info = missionInfo -- for compatibility
@@ -10,9 +11,9 @@ function MissionHelperFrame:updateMissionHeader(missionInfo)
     end
 
     self.missionHeader.Level:SetText(missionInfo.missionScalar)
-    self.missionHeader.Duration:SetText('Duration: ' .. tostring(missionInfo.duration))
+    self.missionHeader.Duration:SetText(L['Duration'] .. ': ' ..tostring(missionInfo.duration))
     if missionInfo.offerTimeRemaining and not missionInfo.canBeCompleted then
-        self.missionHeader.OfferTime:SetText('Offer time: ' .. tostring(missionInfo.offerTimeRemaining))
+        self.missionHeader.OfferTime:SetText(L['Offer time'] .. ': ' .. tostring(missionInfo.offerTimeRemaining))
     end
 end
 
