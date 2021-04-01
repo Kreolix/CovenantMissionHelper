@@ -124,7 +124,7 @@ DataTables.TargetPriorityByType = {
         [9] = {2, 3, 0, 1, 4},
         [10] = {2, 3, 4, 0, 1},
         [11] = {2, 3, 4, 0, 1},
-        [12] = {3, 4, 1, 2, 0} -- not sure
+        [12] = {3, 4, 2, 0, 1}
     },
     [5] = { -- furthest enemy
         [0] = {12, 8, 9, 11, 10, 5, 7, 6},
@@ -3203,7 +3203,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 247,
 			['Period'] = 0,
-			['Points'] = 0.2,
+			['Points'] = 1,
 			['SpellID'] = 191,
 			['TargetType'] = 7
 		},
@@ -3213,7 +3213,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 1,
 			['ID'] = 248,
 			['Period'] = 0,
-			['Points'] = 0.1,
+			['Points'] = 1,
 			['SpellID'] = 191,
 			['TargetType'] = 6
 		}

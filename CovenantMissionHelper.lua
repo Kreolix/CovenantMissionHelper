@@ -1,5 +1,6 @@
 local CovenantMissionHelper, CMH = ...
 local hooksecurefunc = _G["hooksecurefunc"]
+local MissionHelper = MissionHelper
 local L = MissionHelper.L
 
 local function registerHook()
@@ -118,9 +119,9 @@ end
 function MissionHelper:hookShowRewardScreen(...)
     --print('hook show reward screen')
     local board = MissionHelperFrame.board
-    if board.hasRandomSpells then
-        return
-    end
+    --if board.hasRandomSpells then
+    --    return
+    --end
 
     board.blizzardLog = _G["CovenantMissionFrame"].MissionComplete.autoCombatResult.combatLog
     -- TODO: fix it
