@@ -3,6 +3,8 @@ local MissionHelperFrame = _G["MissionHelperFrame"]
 local L = MissionHelper.L
 
 function MissionHelperFrame:updateMissionHeader(missionInfo)
+    if self.board and self.board.missionID == missionInfo.missionID then return end
+
     self.missionHeader.info = missionInfo -- for compatibility
     GarrisonMissionButton_SetRewards(self.missionHeader, missionInfo.rewards)
 
@@ -24,10 +26,6 @@ function MissionHelperFrame:clearFrames()
     self:setResultHeader('')
     self:setResultInfo('')
     self:hideButtonsFrame()
-    for _, reward in pairs(self.missionHeader.Rewards) do
-        reward:Hide()
-    end
-    --self.missionHeader.Rewards = {self.missionHeader.Rewards[1]}
     wipe(CMH.Board.CombatLog)
     wipe(CMH.Board.HiddenCombatLog)
     wipe(CMH.Board.CombatLogEvents)

@@ -31,6 +31,8 @@ function Unit:new(blizzardUnitInfo)
         reflect = 0,
         isLoseLvlUp = blizzardUnitInfo.isLoseLvlUp,
         isWinLvlUp = blizzardUnitInfo.isWinLvlUp,
+        spells = {},
+        passive_spell = nil,
         buffs = {}
     }
 
@@ -52,7 +54,6 @@ function Unit:getAttackType(autoCombatSpells)
 end
 
 function Unit:setSpells(autoCombatSpells)
-    self.spells = {}
     -- auto attack is spell
     local autoAttack = {
         autoCombatSpellID = self:getAttackType(autoCombatSpells),
@@ -64,9 +65,12 @@ function Unit:setSpells(autoCombatSpells)
     local autoAttackSpell = CMH.Spell:new(autoAttack)
     table.insert(self.spells, autoAttackSpell)
 
-    for _, autoCombatSpell in pairs(autoCombatSpells) do
+    for i, autoCombatSpell in pairs(autoCombatSpells) do
+        -- passive spell is always 3rd
+        if i == 3 then
+            self.passive_spell = CMH.Spell:new(autoCombatSpell)
         --broken spells
-        if autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
+        elseif autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
             table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
         end
     end
@@ -106,6 +110,12 @@ function Unit:calculateEffectValue(targetUnit, effect)
         if effect.Effect == EffectTypeEnum.DoT and not self:isAlive() then return value end
         local multiplier, positive_multiplier = self:getDamageMultiplier(targetUnit)
         value = multiplier * (value + self:getAdditionalDamage(targetUnit))
+        -- TODO: здесь до сих пор неправильно.
+        -- Мясыш со своим бафом бьет по мобу. У моба есть рефлект и два разных уменьшения урона в %.
+        -- Базовое значение рефлекта = 132, уменьшение урона = 20+30, увеличение входящего урона на мясыше = 45.
+        -- По моим логам в ответ летит 88, а должно быть 111.
+        -- Без бафа мясыша по нему прилетает ответ на 66. При этом 66 + 45 = 111.
+        -- Возможно, сначала считается модификатор и плюс урон у источника, а потом уже у таргета.
     end
 
     return math.max(math.floor(value + .00000000001), 0)

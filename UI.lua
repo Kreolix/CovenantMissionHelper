@@ -31,7 +31,7 @@ end
 local function editMainFrame()
     local frame  = _G["MissionHelperFrame"]
 
-    -- Blizz frame doesn't scale more then x1. But now it's EffectiveScale = value in user settings. (for example, 1.15)
+    -- Looks like Blizz frame doesn't scale more then x1. But now it's EffectiveScale = value in user settings. (for example, 1.15)
     -- Somewhere after ADDON_LOADED blizz changes CovenantMissionFrame.EffectiveScale to ~1.
     -- Here I set my frame's set EffectiveScale = 1 (if needed) and calculate correct width.
     if CovenantMissionFrame:GetEffectiveScale() > 1 then frame:SetScale(1/CovenantMissionFrame:GetEffectiveScale()) end
@@ -40,8 +40,6 @@ local function editMainFrame()
             scaleFix * (GetScreenWidth() - CovenantMissionFrame:GetRight()/scaleFix) - 10,
             MAX_FRAME_WIDTH
     )
-
-
         frame:ClearAllPoints()
         frame:SetPoint("TOPLEFT", CovenantMissionFrame, "TOPRIGHT", 2, 2)
         frame:SetClampedToScreen(true)
