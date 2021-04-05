@@ -92,7 +92,7 @@ function MissionHelper:showResult(board)
     local combat_log = false and CMH.Board.HiddenCombatLog or CMH.Board.CombatLog
 
     MissionHelperFrame:setResultHeader(board:constructResultString())
-    MissionHelperFrame:setResultInfo(board:getMyTeam())
+    MissionHelperFrame:setResultInfo(board:getResultInfo())
     for _, text in ipairs(combat_log) do MissionHelperFrame:AddCombatLogMessage(text) end
     MissionHelperFrame:AddCombatLogMessage(board:constructResultString())
 

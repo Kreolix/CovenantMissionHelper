@@ -199,7 +199,7 @@ function Board:applyUnitsPassiveSkills()
                     local eventTargetInfo = unit:castSpellEffect(self.units[targetIndex], effect, unit.passive_spell, false)
                     table.insert(targetInfo, eventTargetInfo)
                 end
-                MissionHelper:addEvent(spell.ID, isAura(effect.Effect) and EffectTypeEnum.ApplyAura or effect.Effect, unit.boardIndex, targetInfo)
+                MissionHelper:addEvent(unit.passive_spell.ID, isAura(effect.Effect) and EffectTypeEnum.ApplyAura or effect.Effect, unit.boardIndex, targetInfo)
             end
         end
     end
@@ -257,7 +257,7 @@ function Board:getTurnOrder()
     for i = 0, 4 do
         if self:isUnitAlive(i) then table.insert(sort_table, self.units[i]) end
     end
-    table.sort(sort_table, function (a, b) return (a.currentHealth > b.currentHealth) end)
+    table.sort(sort_table, function (a, b) return (b.currentHealth < a.currentHealth) end)
 
     for _, unit in pairs(sort_table) do
         table.insert(order, unit.boardIndex)
@@ -267,7 +267,7 @@ function Board:getTurnOrder()
     for i = 5, 12 do
         if self:isUnitAlive(i) then table.insert(sort_table, self.units[i]) end
     end
-    table.sort(sort_table, function (a, b) return (a.currentHealth > b.currentHealth) end)
+    table.sort(sort_table, function (a, b) return (b.currentHealth < a.currentHealth) end)
 
     for _, unit in pairs(sort_table) do
         table.insert(order, unit.boardIndex)
@@ -368,7 +368,7 @@ function Board:getTotalLostHP(isWin)
     local _start, _end, startHP = 0, 4, self.initialAlliesHP
     if not isWin then _start, _end, startHP = 5, 12, self.initialEnemiesHP end
     for i = _start, _end do
-        if self.units[i] and self.units[i].isAutoTroop == false then
+        if self.units[i] and (self.units[i].isAutoTroop == false or not isWin) then
             if self.units[i].isWinLvlUp then
                 restHP = restHP + self.units[i].maxHealth
             elseif self:isUnitAlive(i) then
@@ -380,14 +380,16 @@ function Board:getTotalLostHP(isWin)
     return startHP - restHP
 end
 
-function Board:getMyTeam()
-    local function constructString(unit, isWin)
+local function constructString(unit, isWin)
         local result = unit.name .. L['.'] .. ' ' .. L['HP'] .. ' = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
         --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
         if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
         if unit.currentHealth == 0 then result = SKULL_ICON .. result end
         return '    ' .. result
     end
+
+function Board:getResultInfo()
+    if self.isEmpty then return '' end
 
     if self.hasRandomSpells and self.isCalcRandom == false then
         return L["Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."]
@@ -407,6 +409,20 @@ function Board:getMyTeam()
     end
     text = string.format("%s\n%s:\n%s \n\n%s %s %s = %s",
             warningText, L['My units'], text, L['TOTAL'], loseOrGain, L['HP'], math.abs(lostHP))
+
+    if isWin == false then
+        local enemyInfo = ''
+        for i = 5, 12 do
+            if self.units[i] then enemyInfo = enemyInfo .. constructString(self.units[i], isWin) end
+        end
+        local remainingHP = self.initialEnemiesHP - self:getTotalLostHP(false)
+        enemyInfo = string.format('%s:\n%s', L['Enemy units'], enemyInfo)
+        local total = RED_FONT_COLOR:WrapTextInColorCode(
+                string.format('%s = %s/%s (%s%%)',
+                        L['TOTAL REMAINING HP'], remainingHP, self.initialEnemiesHP, math.floor(100*remainingHP/self.initialEnemiesHP))
+        )
+        text = text .. '\n\n\n\n' ..enemyInfo .. '\n\n' .. total
+    end
 
     return text
 end

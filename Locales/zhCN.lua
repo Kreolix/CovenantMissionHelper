@@ -19,6 +19,9 @@ L['Add units on board'] = '添加伙伴以及部队'
 L['More than %s rounds. Winner is undefined'] = '超过 %s 回合。胜利方无法确定。'
 L['WIN'] = '胜利'
 L['LOSE'] = '失败'
+L['Enemy units'] = '敌人单位'
+--TODO: translate
+L['TOTAL REMAINING HP'] = 'TOTAL REMAINING HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = '基础经验值'

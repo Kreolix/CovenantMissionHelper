@@ -66,11 +66,13 @@ function Unit:setSpells(autoCombatSpells)
     table.insert(self.spells, autoAttackSpell)
 
     for i, autoCombatSpell in pairs(autoCombatSpells) do
-        -- passive spell is always 3rd
-        if i == 3 then
+        local spellID = autoCombatSpell.autoCombatSpellID
+        -- passive spell is always 2nd
+        if i == 2  and (spellID == 47 or spellID == 82 or spellID == 90 or spellID == 105 or spellID == 109) then
+            autoCombatSpell.duration = 999
             self.passive_spell = CMH.Spell:new(autoCombatSpell)
         --broken spells
-        elseif autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
+        elseif spellID ~= 109 and spellID ~= 122 then
             table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
         end
     end
@@ -288,7 +290,8 @@ function Unit:manageBuffs(sourceUnit)
             buff:decreaseRestTime()
         end
 
-        if buff.sourceIndex == sourceUnit.boardIndex and buff.duration == 0 then
+        local isDeadUnitPassiveSkill = sourceUnit.passive_spell ~= nil and not sourceUnit:isAlive() and buff.spellID == sourceUnit.passive_spell.ID
+        if buff.sourceIndex == sourceUnit.boardIndex and (buff.duration == 0 or isDeadUnitPassiveSkill) then
             table.insert(removed_buffs, {
                 buff = buff,
                 targetBoardIndex = self.boardIndex,

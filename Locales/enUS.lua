@@ -15,6 +15,8 @@ L['Add units on board'] = 'Add units on board'
 L['More than %s rounds. Winner is undefined'] = 'More than %s rounds. Winner is undefined'
 L['WIN'] = 'WIN'
 L['LOSE'] = 'LOSE'
+L['Enemy units'] = 'Enemy units'
+L['TOTAL REMAINING HP'] = 'TOTAL REMAINING HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = 'Base XP'

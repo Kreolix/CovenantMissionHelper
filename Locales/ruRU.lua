@@ -19,6 +19,8 @@ L['Add units on board'] = 'Добавьте спутников на поле'
 L['More than %s rounds. Winner is undefined'] = 'Более чем %s раундов. Победитель неопределен'
 L['WIN'] = 'ПОБЕДА'
 L['LOSE'] = 'ПОРАЖЕНИЕ'
+L['Enemy units'] = 'Вражеские отряды'
+L['TOTAL REMAINING HP'] = 'ВСЕГО ОСТАЛОСЬ HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = 'Базовый опыт'
