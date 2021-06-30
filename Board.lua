@@ -1,4 +1,5 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
+local L = MissionHelper.L
 
 local SIMULATE_ITERATIONS = 100
 local MAX_ROUNDS = 100
@@ -97,7 +98,7 @@ function Board:new(missionPage, isCalcRandom)
             info.isAutoTroop = info.isAutoTroop ~= nil and info.isAutoTroop or (info.quality == 0)
             info.followerGUID = follower:GetFollowerGUID()
             local XPToLvlUp = 0
-            if info.isAutoTroop then
+            if info.isAutoTroop or info.level == 60 then
                 info.isLoseLvlUp = false
                 info.isWinLvlUp = false
             else
@@ -143,11 +144,13 @@ function Board:simulate()
    self:fight()
 end
 
-function Board:fight()
-    local round = 1
+function Board:fight(round)
+    round = round or 1
+    if round == 1 then self:applyUnitsPassiveSkills() end
+
     while self.isMissionOver == false and round < self.max_rounds do
         CMH:log('\n')
-        CMH:log("|c0000FF33Round " .. round .. "|r")
+        CMH:log(GREEN_FONT_COLOR:WrapTextInColorCode(L["Round"] .. ' ' .. round))
         MissionHelper:addRound()
         local turnOrder = self:getTurnOrder()
 
@@ -183,6 +186,25 @@ function Board:setHasRandomSpells()
     self.hasRandomSpells = false
 end
 
+function Board:applyUnitsPassiveSkills()
+    for _, unit in pairs(self.units) do
+        if unit.passive_spell ~= nil then
+            for _, effect in pairs(unit.passive_spell.effects) do
+                local targetIndexes = self:getTargetIndexes(unit, effect.TargetType, -1)
+                CMH:debug_log("Effect: " .. effect.Effect .. ', TargetType: ' .. effect.TargetType)
+                CMH:debug_log("targetIndexes -> " .. arrayForPrint(targetIndexes))
+
+                local targetInfo = {}
+                for _, targetIndex in pairs(targetIndexes) do
+                    local eventTargetInfo = unit:castSpellEffect(self.units[targetIndex], effect, unit.passive_spell, false)
+                    table.insert(targetInfo, eventTargetInfo)
+                end
+                MissionHelper:addEvent(unit.passive_spell.ID, isAura(effect.Effect) and EffectTypeEnum.ApplyAura or effect.Effect, unit.boardIndex, targetInfo)
+            end
+        end
+    end
+end
+
 --- If one team dead, mission over
 function Board:checkMissionOver()
     local isMyTeamAlive = false
@@ -212,14 +234,18 @@ function Board:isUnitAlive(boardIndex)
     return false
 end
 
-function Board:isTargetableUnit(boardIndex)
-    return self:isUnitAlive(boardIndex) and not self.units[boardIndex].untargetable
+local function isFriendlyUnit(sourceIndex, targetIndex)
+    return (sourceIndex <= 4 and targetIndex <= 4) or (sourceIndex > 4 and targetIndex > 4)
 end
 
-function Board:getTargetableUnits()
+function Board:isTargetableUnit(sourceIndex, targetIndex)
+    return self:isUnitAlive(targetIndex) and (not self.units[targetIndex].untargetable or isFriendlyUnit(sourceIndex, targetIndex))
+end
+
+function Board:getTargetableUnits(sourceIndex)
     local result = {}
     for i = 0, 12 do
-        table.insert(result, i, self:isTargetableUnit(i) and true or false)
+        table.insert(result, i, self:isTargetableUnit(sourceIndex, i))
     end
     CMH:debug_log("targetableUnits -> " .. arrayForPrint(result))
     return result
@@ -231,7 +257,7 @@ function Board:getTurnOrder()
     for i = 0, 4 do
         if self:isUnitAlive(i) then table.insert(sort_table, self.units[i]) end
     end
-    table.sort(sort_table, function (a, b) return (a.currentHealth > b.currentHealth) end)
+    table.sort(sort_table, function (a, b) return (b.currentHealth < a.currentHealth) end)
 
     for _, unit in pairs(sort_table) do
         table.insert(order, unit.boardIndex)
@@ -241,7 +267,7 @@ function Board:getTurnOrder()
     for i = 5, 12 do
         if self:isUnitAlive(i) then table.insert(sort_table, self.units[i]) end
     end
-    table.sort(sort_table, function (a, b) return (a.currentHealth > b.currentHealth) end)
+    table.sort(sort_table, function (a, b) return (b.currentHealth < a.currentHealth) end)
 
     for _, unit in pairs(sort_table) do
         table.insert(order, unit.boardIndex)
@@ -279,24 +305,13 @@ function Board:makeUnitAction(round, boardIndex)
             MissionHelper:addEvent(spell.ID, isAura(effect.Effect) and EffectTypeEnum.ApplyAura or effect.Effect, boardIndex, targetInfo)
 
             for _, info in pairs(targetInfo) do
-                self:onUnitTakeDamage(spell.ID, boardIndex, info)
+                self:onUnitTakeDamage(spell.ID, boardIndex, info, effect)
             end
 
             if effect.TargetType ~= TargetTypeEnum.lastTarget then lastTargetType = effect.TargetType end
         end
 
         unit:startSpellCooldown(spell.ID)
-
-        -- auto attack always has 1 effect and 1 target, so i can check it after cycle
-        if #targetIndexes > 0 and spell:isAutoAttack() then
-            local targetUnit = self.units[targetIndexes[1]]
-            -- dead unit can reflect ...
-            if targetUnit.reflect > 0 then
-                local eventTargetInfo = targetUnit:castSpellEffect(unit, {Effect = CMH.DataTables.EffectTypeEnum.Reflect, ID = -1}, {}, true)
-                MissionHelper:addEvent(spell.ID, CMH.DataTables.EffectTypeEnum.Reflect, targetUnit.boardIndex, {eventTargetInfo})
-                self:onUnitTakeDamage(spell.ID, targetUnit.boardIndex, eventTargetInfo)
-            end
-        end
     end
 end
 
@@ -326,10 +341,24 @@ function Board:manageBuffsFromDeadUnits()
     end
 end
 
-function Board:onUnitTakeDamage(spellID, casterBoardIndex, eventTargetInfo)
+function Board:onUnitTakeDamage(spellID, casterBoardIndex, eventTargetInfo, effect)
+    -- check reflect
+    if effect.Effect == EffectTypeEnum.Damage or effect.Effect == EffectTypeEnum.Damage_2 then
+        --CMH:debug_log(string.format('casterIndex = %s, targetIndex = %s, spellID = %s, effect = %s, targetReflect = %s',
+        --        casterBoardIndex, eventTargetInfo.boardIndex, spellID, effect.Effect, self.units[eventTargetInfo.boardIndex].reflect))
+        local targetUnit = self.units[eventTargetInfo.boardIndex]
+        if targetUnit.reflect > 0 then
+            local reflectEventTargetInfo = targetUnit:castSpellEffect(self.units[casterBoardIndex], {Effect = EffectTypeEnum.Reflect, ID = -1}, {}, true)
+            MissionHelper:addEvent(spellID, CMH.DataTables.EffectTypeEnum.Reflect, targetUnit.boardIndex, {reflectEventTargetInfo})
+            self:onUnitTakeDamage(spellID, targetUnit.boardIndex, reflectEventTargetInfo, {Effect = EffectTypeEnum.Reflect})
+        end
+    end
+
+    -- unit died
     if eventTargetInfo.newHealth == 0 then
         MissionHelper:addEvent(spellID, CMH.DataTables.EffectTypeEnum.Died, casterBoardIndex, {eventTargetInfo})
-        CMH:log(string.format('|cFFFF7700 %s kill %s |r', self.units[casterBoardIndex].name, self.units[eventTargetInfo.boardIndex].name))
+        CMH:log(ORANGE_FONT_COLOR:WrapTextInColorCode(string.format('%s %s %s ',
+                self.units[casterBoardIndex].name, L['kill'], self.units[eventTargetInfo.boardIndex].name)))
         self.isMissionOver = self:checkMissionOver()
     end
 end
@@ -339,7 +368,7 @@ function Board:getTotalLostHP(isWin)
     local _start, _end, startHP = 0, 4, self.initialAlliesHP
     if not isWin then _start, _end, startHP = 5, 12, self.initialEnemiesHP end
     for i = _start, _end do
-        if self.units[i] and self.units[i].isAutoTroop == false then
+        if self.units[i] and (self.units[i].isAutoTroop == false or not isWin) then
             if self.units[i].isWinLvlUp then
                 restHP = restHP + self.units[i].maxHealth
             elseif self:isUnitAlive(i) then
@@ -351,23 +380,26 @@ function Board:getTotalLostHP(isWin)
     return startHP - restHP
 end
 
-function Board:getMyTeam()
-    local function constructString(unit, isWin)
-        local result = unit.name .. '. HP = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
+local function constructString(unit, isWin)
+        local result = unit.name .. L['.'] .. ' ' .. L['HP'] .. ' = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
         --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
         if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
         if unit.currentHealth == 0 then result = SKULL_ICON .. result end
         return '    ' .. result
     end
 
+function Board:getResultInfo()
+    if self.isEmpty then return '' end
+
     if self.hasRandomSpells and self.isCalcRandom == false then
-        return "Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."
+        return L["Units have random abilities. The mission isn't simulate automatically.\nClick on the button to check the result."]
     end
 
     local isWin = self:isWin()
     local lostHP = self:getTotalLostHP(true)
-    local loseOrGain = lostHP >= 0 and 'LOST' or 'RECEIVED'
-    local warningText = self.hasRandomSpells and "|cFFFF0000Units have random abilities. Actual rest HP may not be the same as predicted|r\n" or ''
+    local loseOrGain = lostHP >= 0 and L['LOST'] or L['RECEIVED']
+    local warningText = self.hasRandomSpells and RED_FONT_COLOR:WrapTextInColorCode(
+            L["Units have random abilities. Actual rest HP may not be the same as predicted"]) or ''
 
     local text = ''
     for i = 0, 4 do
@@ -375,27 +407,42 @@ function Board:getMyTeam()
             text = text .. constructString(self.units[i], isWin)
         end
     end
-    text = string.format("%sMy units:\n%s \n\nTOTAL %s HP = %s", warningText, text, loseOrGain, math.abs(lostHP))
+    text = string.format("%s\n%s:\n%s \n\n%s %s %s = %s",
+            warningText, L['My units'], text, L['TOTAL'], loseOrGain, L['HP'], math.abs(lostHP))
+
+    if isWin == false then
+        local enemyInfo = ''
+        for i = 5, 12 do
+            if self.units[i] then enemyInfo = enemyInfo .. constructString(self.units[i], isWin) end
+        end
+        local remainingHP = self.initialEnemiesHP - self:getTotalLostHP(false)
+        enemyInfo = string.format('%s:\n%s', L['Enemy units'], enemyInfo)
+        local total = RED_FONT_COLOR:WrapTextInColorCode(
+                string.format('%s = %s/%s (%s%%)',
+                        L['TOTAL REMAINING HP'], remainingHP, self.initialEnemiesHP, math.floor(100*remainingHP/self.initialEnemiesHP))
+        )
+        text = text .. '\n\n\n\n' ..enemyInfo .. '\n\n' .. total
+    end
 
     return text
 end
 
 function Board:constructResultString()
     if self.isEmpty then
-        return 'Add units on board'
+        return L['Add units on board']
     elseif self.hasRandomSpells and self.isCalcRandom == false then
         return ''
     elseif not self.isMissionOver then
-        return string.format('|cFFFF0000More than %s rounds. Winner is undefined|r', self.max_rounds)
+        return RED_FONT_COLOR:WrapTextInColorCode(string.format(L['More than %s rounds. Winner is undefined'], self.max_rounds))
     end
 
     local result = self:isWin()
     if self.probability == 100 and result then
-        return '|cFF00FF00 Predicted result: WIN |r'
+        return GREEN_FONT_COLOR:WrapTextInColorCode(L['WIN'])
     elseif self.probability == 0 or (result == false and self.probability == 100) then
-        return '|cFFFF0000 Predicted result: LOSE |r'
+        return RED_FONT_COLOR:WrapTextInColorCode(L['LOSE'])
     else
-        return string.format('|cFFFF7700 Predicted result: WIN (~%s%%) |r', self.probability)
+        return ORANGE_FONT_COLOR:WrapTextInColorCode(string.format(L['WIN'] .. ' (~%s%%)', self.probability))
     end
 end
 
@@ -411,7 +458,7 @@ end
 function Board:getTargetIndexes(unit, targetType, lastTargetType, lastTargetIndexes)
     -- update targets if skill has different effects target type
     if lastTargetType ~= targetType and targetType ~= TargetTypeEnum.lastTarget then
-        local aliveUnits = self:getTargetableUnits()
+        local aliveUnits = self:getTargetableUnits(unit.boardIndex)
         return CMH.TargetManager:getTargetIndexes(unit.boardIndex, targetType, aliveUnits, unit.tauntedBy)
     else
         return lastTargetIndexes

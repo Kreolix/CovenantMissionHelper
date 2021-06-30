@@ -1,7 +1,10 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
 local MissionHelperFrame = _G["MissionHelperFrame"]
+local L = MissionHelper.L
 
 function MissionHelperFrame:updateMissionHeader(missionInfo)
+    if self.board and self.board.missionID == missionInfo.missionID then return end
+
     self.missionHeader.info = missionInfo -- for compatibility
     GarrisonMissionButton_SetRewards(self.missionHeader, missionInfo.rewards)
 
@@ -10,9 +13,9 @@ function MissionHelperFrame:updateMissionHeader(missionInfo)
     end
 
     self.missionHeader.Level:SetText(missionInfo.missionScalar)
-    self.missionHeader.Duration:SetText('Duration: ' .. tostring(missionInfo.duration))
+    self.missionHeader.Duration:SetText(L['Duration'] .. ': ' ..tostring(missionInfo.duration))
     if missionInfo.offerTimeRemaining and not missionInfo.canBeCompleted then
-        self.missionHeader.OfferTime:SetText('Offer time: ' .. tostring(missionInfo.offerTimeRemaining))
+        self.missionHeader.OfferTime:SetText(L['Offer time'] .. ': ' .. tostring(missionInfo.offerTimeRemaining))
     end
 end
 
@@ -23,10 +26,6 @@ function MissionHelperFrame:clearFrames()
     self:setResultHeader('')
     self:setResultInfo('')
     self:hideButtonsFrame()
-    for _, reward in pairs(self.missionHeader.Rewards) do
-        reward:Hide()
-    end
-    --self.missionHeader.Rewards = {self.missionHeader.Rewards[1]}
     wipe(CMH.Board.CombatLog)
     wipe(CMH.Board.HiddenCombatLog)
     wipe(CMH.Board.CombatLogEvents)

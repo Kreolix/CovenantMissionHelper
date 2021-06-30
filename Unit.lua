@@ -1,4 +1,5 @@
-CovenantMissionHelper, CMH = ...
+local CovenantMissionHelper, CMH = ...
+local L = MissionHelper.L
 
 local Unit = {}
 local EffectTypeEnum, EffectType = CMH.DataTables.EffectTypeEnum, CMH.DataTables.EffectType
@@ -14,13 +15,15 @@ end
 
 function Unit:new(blizzardUnitInfo)
     local newObj = {
-        -- use for unusual attack only, blizz dont store combatantID in mission's tables
+        -- use for unusual attack only, blizz doesn't store combatantID in mission's tables
         ID = blizzardUnitInfo.garrFollowerID ~= nil and blizzardUnitInfo.garrFollowerID
                 or blizzardUnitInfo.portraitFileDataID or blizzardUnitInfo.portraitIconID,
         followerGUID = blizzardUnitInfo.followerGUID,
         name = blizzardUnitInfo.name,
+        level = blizzardUnitInfo.level,
         maxHealth = blizzardUnitInfo.maxHealth,
         currentHealth = blizzardUnitInfo.health,
+        startHealth = blizzardUnitInfo.health,
         attack = blizzardUnitInfo.attack,
         isAutoTroop = blizzardUnitInfo.isAutoTroop,
         boardIndex = blizzardUnitInfo.boardIndex,
@@ -30,6 +33,8 @@ function Unit:new(blizzardUnitInfo)
         reflect = 0,
         isLoseLvlUp = blizzardUnitInfo.isLoseLvlUp,
         isWinLvlUp = blizzardUnitInfo.isWinLvlUp,
+        spells = {},
+        passive_spell = nil,
         buffs = {}
     }
 
@@ -41,22 +46,20 @@ function Unit:new(blizzardUnitInfo)
     return newObj
 end
 
-function Unit:getAttackType()
-    if CMH.DataTables.UnusualAttackType[self.ID] ~= nil then
-        return CMH.DataTables.UnusualAttackType[self.ID]
-    elseif self.role == 1 or self.role == 5 then -- melee and tank
-        return 11
+function Unit:getAttackType(autoCombatSpells)
+    local spellID = autoCombatSpells[1].autoCombatSpellID
+    if CMH.DataTables.UnusualAttackType[spellID] ~= nil and CMH.DataTables.UnusualAttackType[spellID][self.ID] ~= nil then
+        return CMH.DataTables.UnusualAttackType[spellID][self.ID]
     else
-        return 15
+        return (self.role == 1 or self.role == 5) and 11 or 15
     end
 end
 
 function Unit:setSpells(autoCombatSpells)
-    self.spells = {}
     -- auto attack is spell
     local autoAttack = {
-        autoCombatSpellID = self:getAttackType(),
-        name = 'Auto Attack',
+        autoCombatSpellID = self:getAttackType(autoCombatSpells),
+        name = L['Auto Attack'],
         duration = 0,
         cooldown = 0,
         flags = 0
@@ -64,9 +67,14 @@ function Unit:setSpells(autoCombatSpells)
     local autoAttackSpell = CMH.Spell:new(autoAttack)
     table.insert(self.spells, autoAttackSpell)
 
-    for _, autoCombatSpell in pairs(autoCombatSpells) do
+    for i, autoCombatSpell in pairs(autoCombatSpells) do
+        local spellID = autoCombatSpell.autoCombatSpellID
+        -- passive spell is always 2nd
+        if i == 2  and (spellID == 47 or spellID == 82 or spellID == 90 or spellID == 105 or spellID == 109) then
+            autoCombatSpell.duration = 999
+            self.passive_spell = CMH.Spell:new(autoCombatSpell)
         --broken spells
-        if autoCombatSpell.autoCombatSpellID ~= 109 and autoCombatSpell.autoCombatSpellID ~= 122 then
+        elseif spellID ~= 109 and spellID ~= 122 then
             table.insert(self.spells, CMH.Spell:new(autoCombatSpell))
         end
     end
@@ -106,6 +114,12 @@ function Unit:calculateEffectValue(targetUnit, effect)
         if effect.Effect == EffectTypeEnum.DoT and not self:isAlive() then return value end
         local multiplier, positive_multiplier = self:getDamageMultiplier(targetUnit)
         value = multiplier * (value + self:getAdditionalDamage(targetUnit))
+        -- TODO: здесь до сих пор неправильно.
+        -- Мясыш со своим бафом бьет по мобу. У моба есть рефлект и два разных уменьшения урона в %.
+        -- Базовое значение рефлекта = 132, уменьшение урона = 20+30, увеличение входящего урона на мясыше = 45.
+        -- По моим логам в ответ летит 88, а должно быть 111.
+        -- Без бафа мясыша по нему прилетает ответ на 66. При этом 66 + 45 = 111.
+        -- Возможно, сначала считается модификатор и плюс урон у источника, а потом уже у таргета.
     end
 
     return math.max(math.floor(value + .00000000001), 0)
@@ -200,34 +214,34 @@ end
 function Unit:castSpellEffect(targetUnit, effect, spell, isAppliedBuff)
     local oldTargetHP = targetUnit.currentHealth
     local value = 0
-    local color = (isAppliedBuff == false and spell:isAutoAttack()) and '00FFFFFF' or '0066CCFF'
+    local color = (isAppliedBuff == false and spell:isAutoAttack()) and HIGHLIGHT_FONT_COLOR or BRIGHTBLUE_FONT_COLOR
 
     -- deal damage
     if isDamageEffect(effect, isAppliedBuff) then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.currentHealth = math.max(0, targetUnit.currentHealth - value)
-        CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
-            color, self.name, EffectType[effect.Effect], targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
+        CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s %s%s (%s %s -> %s)',
+            self.name, L[EffectType[effect.Effect]], targetUnit.name, L['for'], value, L['.'], L['HP'], oldTargetHP, targetUnit.currentHealth)))
 
     -- heal
     elseif effect.Effect == EffectTypeEnum.Heal or effect.Effect == EffectTypeEnum.Heal_2
             or (effect.Effect == EffectTypeEnum.HoT and isAppliedBuff == true) then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.currentHealth = math.min(targetUnit.maxHealth, targetUnit.currentHealth + value)
-        CMH:log(string.format('|c%s%s %s %s for %s. (HP %s -> %s)|r',
-            color, self.name, EffectType[effect.Effect], targetUnit.name, value, oldTargetHP, targetUnit.currentHealth))
+        CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s %s%s (%s %s -> %s)',
+            self.name, L[EffectType[effect.Effect]], targetUnit.name, L['for'], value, L['.'], L['HP'], oldTargetHP, targetUnit.currentHealth)))
 
     -- Maximum health multiplier
     elseif effect.Effect == EffectTypeEnum.MaxHPMultiplier then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.maxHealth = targetUnit.maxHealth + value
-        CMH:log(string.format('|c%s%s %s %s for %s|r',
-            color, self.name, EffectType[effect.Effect], targetUnit.name, value))
+        CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s %s',
+            self.name, L[EffectType[effect.Effect]], targetUnit.name, L['for'], value)))
     else
         value = self:getEffectBaseValue(effect)
         self:applyBuff(targetUnit, effect, value, spell.duration, spell.name)
-        CMH:log(string.format('|c%s%s %s %s (%s)|r',
-            color, self.name, 'apply ' .. EffectType[effect.Effect], targetUnit.name, value))
+        CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s (%s)',
+            self.name, L['apply'], L[EffectType[effect.Effect]], targetUnit.name, value)))
     end
 
     return {
@@ -278,13 +292,14 @@ function Unit:manageBuffs(sourceUnit)
             buff:decreaseRestTime()
         end
 
-        if buff.sourceIndex == sourceUnit.boardIndex and buff.duration == 0 then
+        local isDeadUnitPassiveSkill = sourceUnit.passive_spell ~= nil and not sourceUnit:isAlive() and buff.spellID == sourceUnit.passive_spell.ID
+        if buff.sourceIndex == sourceUnit.boardIndex and (buff.duration == 0 or isDeadUnitPassiveSkill) then
             table.insert(removed_buffs, {
                 buff = buff,
                 targetBoardIndex = self.boardIndex,
             })
-            CMH:log(string.format('|c000088CC%s remove %s from %s|r',
-                    tostring(sourceUnit.name), tostring(buff.name), tostring(self.name)))
+            CMH:log(BLUE_FONT_COLOR:WrapTextInColorCode(string.format('%s %s %s %s %s',
+                    tostring(sourceUnit.name), L['remove'], tostring(buff.name), L['from'], tostring(self.name))))
             table.remove(self.buffs, i)
             if buff.Effect == EffectTypeEnum.Taunt then
                 self.tauntedBy = nil
