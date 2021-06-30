@@ -65,7 +65,6 @@ end
 function MetaBoard:findBestDispositionIterator()
     -- unique subs only
     local hash = {}
-    local numbers = {}
     local subs = SUBS
 
     return function ()

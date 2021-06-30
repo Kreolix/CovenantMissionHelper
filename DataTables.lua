@@ -2035,9 +2035,9 @@ DataTables.SpellEffects = {
 			['Flags'] = 3,
 			['ID'] = 147,
 			['Period'] = 0,
-			['Points'] = 0.4,
+			['Points'] = 1.5,
 			['SpellID'] = 107,
-			['TargetType'] = 7
+			['TargetType'] = 3
 		},
 		[2] = {
 			['Effect'] = 20,
@@ -2045,7 +2045,7 @@ DataTables.SpellEffects = {
 			['Flags'] = 3,
 			['ID'] = 148,
 			['Period'] = 0,
-			['Points'] = 0.3,
+			['Points'] = 0.5,
 			['SpellID'] = 107,
 			['TargetType'] = 3
 		}
@@ -3393,7 +3393,7 @@ DataTables.SpellEffects = {
 			['Period'] = 0,
 			['Points'] = 1,
 			['SpellID'] = 200,
-			['TargetType'] = 3
+			['TargetType'] = 15
 		},
 		[2] = {
 			['Effect'] = 12,
@@ -3403,7 +3403,7 @@ DataTables.SpellEffects = {
 			['Period'] = 1,
 			['Points'] = -0.5,
 			['SpellID'] = 200,
-			['TargetType'] = 3
+			['TargetType'] = 15
 		}
 	},
 	[201] = {
@@ -4820,6 +4820,726 @@ DataTables.SpellEffects = {
 			['Points'] = 0.25,
 			['SpellID'] = 303,
 			['TargetType'] = 17
+		}
+	},
+	[305] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 411,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 305,
+			['TargetType'] = 17
+		}
+	},
+	[306] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 412,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 306,
+			['TargetType'] = 2
+		},
+		[2] = {
+			['Effect'] = 18,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 413,
+			['Period'] = 0,
+			['Points'] = 0.6,
+			['SpellID'] = 306,
+			['TargetType'] = 2
+		}
+	},
+	[307] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 414,
+			['Period'] = 0,
+			['Points'] = 1.6,
+			['SpellID'] = 307,
+			['TargetType'] = 11
+		}
+	},
+	[308] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 415,
+			['Period'] = 0,
+			['Points'] = 3.5,
+			['SpellID'] = 308,
+			['TargetType'] = 5
+		}
+	},
+	[309] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 416,
+			['Period'] = 0,
+			['Points'] = 2,
+			['SpellID'] = 309,
+			['TargetType'] = 6
+		},
+		[2] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 1,
+			['Flags'] = 0,
+			['ID'] = 417,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 309,
+			['TargetType'] = 6
+		}
+	},
+	[310] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 418,
+			['Period'] = 0,
+			['Points'] = 1.4,
+			['SpellID'] = 310,
+			['TargetType'] = 3
+		},
+		[2] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 1,
+			['Flags'] = 0,
+			['ID'] = 419,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 310,
+			['TargetType'] = 1
+		}
+	},
+	[311] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 420,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 311,
+			['TargetType'] = 2
+		},
+		[2] = {
+			['Effect'] = 18,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 421,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 311,
+			['TargetType'] = 2
+		}
+	},
+	[312] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 422,
+			['Period'] = 0,
+			['Points'] = 1.8,
+			['SpellID'] = 312,
+			['TargetType'] = 11
+		}
+	},
+	[313] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 423,
+			['Period'] = 0,
+			['Points'] = 0.7,
+			['SpellID'] = 313,
+			['TargetType'] = 6
+		}
+	},
+	[314] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 424,
+			['Period'] = 0,
+			['Points'] = 1.3,
+			['SpellID'] = 314,
+			['TargetType'] = 2
+		},
+		[2] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 425,
+			['Period'] = 0,
+			['Points'] = 0.5,
+			['SpellID'] = 314,
+			['TargetType'] = 2
+		}
+	},
+	[315] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 426,
+			['Period'] = 0,
+			['Points'] = 1.5,
+			['SpellID'] = 315,
+			['TargetType'] = 5
+		},
+		[2] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 427,
+			['Period'] = 0,
+			['Points'] = -0.3,
+			['SpellID'] = 315,
+			['TargetType'] = 5
+		}
+	},
+	[316] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 428,
+			['Period'] = 0,
+			['Points'] = 1,
+			['SpellID'] = 316,
+			['TargetType'] = 3
+		},
+		[2] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 429,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 316,
+			['TargetType'] = 1
+		}
+	},
+	[317] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 430,
+			['Period'] = 0,
+			['Points'] = 1.5,
+			['SpellID'] = 317,
+			['TargetType'] = 15
+		},
+		[2] = {
+			['Effect'] = 20,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 431,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 317,
+			['TargetType'] = 15
+		}
+	},
+	[318] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 432,
+			['Period'] = 0,
+			['Points'] = 0.5,
+			['SpellID'] = 318,
+			['TargetType'] = 6
+		}
+	},
+	[319] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 433,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 319,
+			['TargetType'] = 15
+		},
+		[2] = {
+			['Effect'] = 7,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 434,
+			['Period'] = 0,
+			['Points'] = 0.5,
+			['SpellID'] = 319,
+			['TargetType'] = 15
+		}
+	},
+	[320] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 435,
+			['Period'] = 0,
+			['Points'] = 1,
+			['SpellID'] = 320,
+			['TargetType'] = 17
+		}
+	},
+	[321] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 436,
+			['Period'] = 0,
+			['Points'] = 2,
+			['SpellID'] = 321,
+			['TargetType'] = 2
+		}
+	},
+	[322] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 437,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 322,
+			['TargetType'] = 3
+		},
+		[2] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 438,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 322,
+			['TargetType'] = 1
+		},
+		[3] = {
+			['Effect'] = 18,
+			['EffectIndex'] = 2,
+			['Flags'] = 1,
+			['ID'] = 439,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 322,
+			['TargetType'] = 1
+		}
+	},
+	[323] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 440,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 323,
+			['TargetType'] = 17
+		},
+		[2] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 1,
+			['Flags'] = 0,
+			['ID'] = 441,
+			['Period'] = 0,
+			['Points'] = -0.1,
+			['SpellID'] = 323,
+			['TargetType'] = 17
+		}
+	},
+	[324] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 442,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 324,
+			['TargetType'] = 8
+		}
+	},
+	[325] = {
+		[1] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 0,
+			['Flags'] = 0,
+			['ID'] = 443,
+			['Period'] = 0,
+			['Points'] = 0.6,
+			['SpellID'] = 325,
+			['TargetType'] = 8
+		}
+	},
+	[326] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 453,
+			['Period'] = 0,
+			['Points'] = 0.25,
+			['SpellID'] = 326,
+			['TargetType'] = 9
+		}
+	},
+	[327] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 454,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 327,
+			['TargetType'] = 22
+		}
+	},
+	[328] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 455,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 328,
+			['TargetType'] = 3
+		}
+	},
+	[329] = {
+		[1] = {
+			['Effect'] = 14,
+			['EffectIndex'] = 0,
+			['Flags'] = 0,
+			['ID'] = 456,
+			['Period'] = 0,
+			['Points'] = -0.5,
+			['SpellID'] = 329,
+			['TargetType'] = 1
+		}
+	},
+	[330] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 457,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 330,
+			['TargetType'] = 6
+		}
+	},
+	[331] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 458,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 331,
+			['TargetType'] = 22
+		}
+	},
+	[332] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 459,
+			['Period'] = 0,
+			['Points'] = 1.5,
+			['SpellID'] = 332,
+			['TargetType'] = 5
+		}
+	},
+	[333] = {
+		[1] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 460,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 333,
+			['TargetType'] = 1
+		}
+	},
+	[334] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 461,
+			['Period'] = 0,
+			['Points'] = 0.9,
+			['SpellID'] = 334,
+			['TargetType'] = 3
+		}
+	},
+	[335] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 462,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 335,
+			['TargetType'] = 17
+		}
+	},
+	[336] = {
+		[1] = {
+			['Effect'] = 4,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 463,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 336,
+			['TargetType'] = 2
+		}
+	},
+	[337] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 464,
+			['Period'] = 0,
+			['Points'] = 2,
+			['SpellID'] = 337,
+			['TargetType'] = 5
+		},
+		[2] = {
+			['Effect'] = 7,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 481,
+			['Period'] = 0,
+			['Points'] = 0.4,
+			['SpellID'] = 337,
+			['TargetType'] = 5
+		}
+	},
+	[338] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 465,
+			['Period'] = 0,
+			['Points'] = 0.5,
+			['SpellID'] = 338,
+			['TargetType'] = 3
+		}
+	},
+	[339] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 466,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 339,
+			['TargetType'] = 7
+		}
+	},
+	[340] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 467,
+			['Period'] = 0,
+			['Points'] = 0.6,
+			['SpellID'] = 340,
+			['TargetType'] = 5
+		}
+	},
+	[341] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 468,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 341,
+			['TargetType'] = 5
+		},
+		[2] = {
+			['Effect'] = 20,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 478,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 341,
+			['TargetType'] = 5
+		}
+	},
+	[342] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 469,
+			['Period'] = 0,
+			['Points'] = 1,
+			['SpellID'] = 342,
+			['TargetType'] = 3
+		},
+		[2] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 477,
+			['Period'] = 0,
+			['Points'] = -0.7,
+			['SpellID'] = 342,
+			['TargetType'] = 3
+		}
+	},
+	[343] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 470,
+			['Period'] = 0,
+			['Points'] = 0.8,
+			['SpellID'] = 343,
+			['TargetType'] = 15
+		},
+		[2] = {
+			['Effect'] = 12,
+			['EffectIndex'] = 1,
+			['Flags'] = 0,
+			['ID'] = 476,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 343,
+			['TargetType'] = 1
+		}
+	},
+	[344] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 471,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 344,
+			['TargetType'] = 7
+		}
+	},
+	[345] = {
+		[1] = {
+			['Effect'] = 20,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 472,
+			['Period'] = 0,
+			['Points'] = -0.3,
+			['SpellID'] = 345,
+			['TargetType'] = 6
+		}
+	},
+	[346] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 473,
+			['Period'] = 0,
+			['Points'] = 0.3,
+			['SpellID'] = 346,
+			['TargetType'] = 3
+		},
+		[2] = {
+			['Effect'] = 19,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 475,
+			['Period'] = 0,
+			['Points'] = 0.01,
+			['SpellID'] = 346,
+			['TargetType'] = 3
+		}
+	},
+	[347] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 474,
+			['Period'] = 0,
+			['Points'] = 1,
+			['SpellID'] = 347,
+			['TargetType'] = 11
+		}
+	},
+	[348] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 479,
+			['Period'] = 0,
+			['Points'] = 1.2,
+			['SpellID'] = 348,
+			['TargetType'] = 5
+		},
+		[2] = {
+			['Effect'] = 20,
+			['EffectIndex'] = 1,
+			['Flags'] = 1,
+			['ID'] = 480,
+			['Period'] = 0,
+			['Points'] = 0.2,
+			['SpellID'] = 348,
+			['TargetType'] = 5
+		}
+	},
+	[349] = {
+		[1] = {
+			['Effect'] = 3,
+			['EffectIndex'] = 0,
+			['Flags'] = 1,
+			['ID'] = 482,
+			['Period'] = 0,
+			['Points'] = 0.1,
+			['SpellID'] = 349,
+			['TargetType'] = 7
 		}
 	}
 }

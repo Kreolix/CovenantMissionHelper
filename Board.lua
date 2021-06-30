@@ -98,7 +98,7 @@ function Board:new(missionPage, isCalcRandom)
             info.isAutoTroop = info.isAutoTroop ~= nil and info.isAutoTroop or (info.quality == 0)
             info.followerGUID = follower:GetFollowerGUID()
             local XPToLvlUp = 0
-            if info.isAutoTroop then
+            if info.isAutoTroop or info.level == 60 then
                 info.isLoseLvlUp = false
                 info.isWinLvlUp = false
             else
