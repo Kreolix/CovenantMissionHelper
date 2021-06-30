@@ -103,8 +103,8 @@ function Board:new(missionPage, isCalcRandom)
                 info.isWinLvlUp = false
             else
                 XPToLvlUp = isCompletedMission and info.maxXP - info.currentXP or info.levelXP - info.xp
-                info.isLoseLvlUp = XPToLvlUp < newObj.baseXP
-                info.isWinLvlUp = XPToLvlUp < newObj.winXP
+                info.isLoseLvlUp = XPToLvlUp <= newObj.baseXP
+                info.isWinLvlUp = XPToLvlUp <= newObj.winXP
             end
             if info.autoCombatSpells == nil then info.autoCombatSpells = follower.autoCombatSpells end
             local myUnit = CMH.Unit:new(info)
