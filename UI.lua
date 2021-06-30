@@ -299,6 +299,7 @@ function MissionHelper:createMissionHelperFrame()
 end
 
 function MissionHelper:editDefaultFrame()
+    local left = CovenantMissionFrame:GetLeft() or 0
     CovenantMissionFrame:ClearAllPoints()
-    CovenantMissionFrame:SetPoint("LEFT", UIParent, "LEFT", math.max(5, CovenantMissionFrame:GetLeft() - 300), 0)
+    CovenantMissionFrame:SetPoint("LEFT", UIParent, "LEFT", math.max(5, left - 300), 0)
 end
