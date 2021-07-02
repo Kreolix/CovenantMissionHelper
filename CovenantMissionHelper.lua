@@ -175,7 +175,7 @@ function MissionHelper:addXPPerHour(followerTypeID)
     if type(self) ~= 'table' then return end
 
     for _, mission in pairs(self) do
-        if mission.rewards[1].followerXP then
+        if mission.rewards[1] and mission.rewards[1].followerXP then
             mission.rewards[1].tooltip = mission.rewards[1].tooltip ..
                     '\n+' .. string.format("%3d", mission.rewards[1].followerXP / (mission.durationSeconds / 3600)) .. L['XP/hour']
         end
