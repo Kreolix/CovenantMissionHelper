@@ -447,12 +447,18 @@ function Board:constructResultString()
 end
 
 function Board:isWin()
+    local hasAliveFollower = false
+    local hasAliveEnemy = false
     for _, unit in pairs(self.units) do
         if unit:isAlive() then
-            if unit.boardIndex > 4 then return false else return true
+            if unit.boardIndex > 4 then
+                hasAliveEnemy = true
+            else
+                hasAliveFollower = true
             end
         end
     end
+    return hasAliveFollower == true and hasAliveEnemy == false
 end
 
 function Board:getTargetIndexes(unit, targetType, lastTargetType, lastTargetIndexes)

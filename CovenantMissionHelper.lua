@@ -75,8 +75,8 @@ function MissionHelper:findBestDisposition()
     local metaBoard = CMH.MetaBoard:new(missionPage, false)
 
     MissionHelper:clearBoard(missionPage)
-    MissionHelperFrame.board = metaBoard:findBestDisposition()
-
+    local bestBoard = metaBoard:findBestDisposition();
+    MissionHelperFrame.board = bestBoard
     for _, unit in pairs(MissionHelperFrame.board.units) do
         if unit.boardIndex < 5 then
             local followerInfo = C_Garrison.GetFollowerInfo(unit.followerGUID)

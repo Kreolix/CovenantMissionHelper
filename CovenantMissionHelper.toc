@@ -21,3 +21,4 @@ UI.xml
 UI.lua
 MissionHelperFrame.lua
 Checker.lua
+CombinationUtil.lua
