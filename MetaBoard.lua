@@ -4,33 +4,20 @@ local MetaBoard = {}
 CMH.MetaBoard = MetaBoard
 
 local function copy(obj, seen)
-    if type(obj) ~= 'table' then return obj end
-    if seen and seen[obj] then return seen[obj] end
+    if type(obj) ~= 'table' then
+        return obj
+    end
+    if seen and seen[obj] then
+        return seen[obj]
+    end
     local s = seen or {}
     local res = setmetatable({}, getmetatable(obj))
     s[obj] = res
-    for k, v in pairs(obj) do res[copy(k, s)] = copy(v, s) end
+    for k, v in pairs(obj) do
+        res[copy(k, s)] = copy(v, s)
+    end
     return res
 end
-
-local function get_subs(numbers)
-    local result = {}
-    if #numbers == 2 then return {{numbers[1], numbers[2]}, {numbers[2], numbers[1]}} end
-
-    for i, number in pairs(numbers) do
-        local new_numbers = {}
-        for _, n in pairs(numbers) do if n ~= number then table.insert(new_numbers, n) end end
-        local tmp = get_subs(new_numbers)
-        for _, v in pairs(tmp) do
-            table.insert(v, 1, number)
-            table.insert(result, v)
-        end
-    end
-
-    return result
-end
-
-local SUBS = get_subs({0, 1, 2, 3, 4})
 
 function MetaBoard:new(missionPage, isCalcRandom)
     local newObj = {
@@ -43,11 +30,17 @@ function MetaBoard:new(missionPage, isCalcRandom)
 end
 
 function MetaBoard:findBestDisposition()
-    local bestBoard, bestLostHP = {}, 9999999
-    for board in self:findBestDispositionIterator() do
+    self.baseBoard.isCalcRandom = false;
+    self.baseBoard.isEmpty = false;
+
+    local bestBoard = copy(self.baseBoard)
+    local bestLostHP = 9999999
+
+    for _, board in ipairs(self:getAllBoardCombinations()) do
         board:simulate()
-        local lostHP = board:getTotalLostHP(board:isWin())
-        if board:isWin() then
+        local isWin = board:isWin()
+        local lostHP = board:getTotalLostHP(isWin)
+        if isWin then
             if lostHP < bestLostHP then
                 bestLostHP = lostHP
                 bestBoard = board
@@ -58,43 +51,52 @@ function MetaBoard:findBestDisposition()
         wipe(CMH.Board.HiddenCombatLog)
         wipe(CMH.Board.CombatLogEvents)
     end
-
-    return next(bestBoard) ~= nil and bestBoard or self.baseBoard
+    return bestBoard
 end
 
-function MetaBoard:findBestDispositionIterator()
-    -- unique subs only
-    local hash = {}
-    local subs = SUBS
+function MetaBoard:getAllBoardCombinations()
+    local followers = {};
+    for i = 0, 4 do
+        local unit = self.baseBoard.units[i];
+        if unit ~= nil and unit.isAutoTroop == false then
+            followers[unit.ID] = unit;
+        end
+    end
+    local troopCombinations = CMH.CombinationUtil:getTroopCombinations(followers);
+    local boards = {};
 
-    return function ()
-        for _, sub in ipairs(subs) do
-            local unitIDs = ''
+    for _, troopCombination in pairs(troopCombinations) do
+        local newBoard = copy(self.baseBoard)
 
-            for _, boardIndex in ipairs(sub) do
-                    unitIDs = self.baseBoard.units[boardIndex] == nil and unitIDs .. '-1|' or unitIDs .. self.baseBoard.units[boardIndex].ID .. '|'
-            end
+        for index, troopId in pairs(troopCombination) do
+            if troopId == -1 then
+                newBoard.units[index - 1] = nil;
+            else
+                if troopId == 1 or troopId == 2 then
+                    local unit = C_Garrison.GetAutoTroops(123)[troopId]
 
-            if not hash[unitIDs] then
-                --print(unitIDs)
-                --print(table.concat(sub, ';'))
-                hash[unitIDs] = true
+                    local autoCombatSpells, autoCombatAutoAttack = C_Garrison.GetFollowerAutoCombatSpells(unit.followerID, unit.level)
+                    local autoCombatStats = C_Garrison.GetFollowerAutoCombatStats(unit.followerID, unit.level)
 
-                local newBoard = copy(self.baseBoard)
-                for newIndex, oldIndex in ipairs(sub) do
-                    if self.baseBoard.units[oldIndex] ~= nil then
-                        -- newIndex starts from 1
-                        newBoard.units[newIndex-1] = copy(self.baseBoard.units[oldIndex])
-                        newBoard.units[newIndex-1].boardIndex = newIndex-1
-                        --print(newIndex-1 .. ', ' .. oldIndex .. ': ' .. newBoard.units[newIndex-1].name)
-                    else
-                        newBoard.units[newIndex-1] = nil
-                    end
+                    unit.boardIndex = index - 1
+                    unit.followerGUID = unit.followerID
+                    unit.autoCombatSpells = autoCombatSpells
+                    unit.health = autoCombatStats.maxHealth
+                    unit.maxHealth = autoCombatStats.maxHealth
+                    unit.attack = autoCombatStats.attack
+                    newBoard.units[index - 1] = CMH.Unit:new(unit);
+                else
+                    local unit = followers[troopId]
+                    local autoCombatSpells, autoCombatAutoAttack = C_Garrison.GetFollowerAutoCombatSpells(unit.ID, unit.level)
+
+                    unit.boardIndex = index - 1
+                    unit.autoCombatSpells = autoCombatSpells
+                    unit.health = unit.currentHealth
+                    newBoard.units[index - 1] = CMH.Unit:new(unit);
                 end
-                newBoard.isCalcRandom = false
-                return newBoard
             end
         end
-        return nil
+        table.insert(boards, newBoard)
     end
+    return boards
 end
