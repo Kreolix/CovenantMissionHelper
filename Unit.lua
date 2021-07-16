@@ -47,9 +47,10 @@ function Unit:new(blizzardUnitInfo)
 end
 
 function Unit:getAttackType(autoCombatSpells)
-    local spellID = autoCombatSpells[1].autoCombatSpellID
-    if CMH.DataTables.UnusualAttackType[spellID] ~= nil and CMH.DataTables.UnusualAttackType[spellID][self.ID] ~= nil then
-        return CMH.DataTables.UnusualAttackType[spellID][self.ID]
+    if autoCombatSpells[1] ~= nil and
+            CMH.DataTables.UnusualAttackType[autoCombatSpells[1].autoCombatSpellID] ~= nil and
+            CMH.DataTables.UnusualAttackType[autoCombatSpells[1].autoCombatSpellID][self.ID] ~= nil then
+        return CMH.DataTables.UnusualAttackType[autoCombatSpells[1].autoCombatSpellID][self.ID]
     else
         return (self.role == 1 or self.role == 5) and 11 or 15
     end
