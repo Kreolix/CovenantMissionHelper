@@ -48,17 +48,22 @@ function MissionHelperFrame:hidePredictButton()
 end
 
 function MissionHelperFrame:hideBestDispositionButton()
-    self.buttonsFrame.BestDispositionButton:Hide()
+    self.buttonsFrame.BestDispositionByPercentButton:Hide()
+    self.buttonsFrame.BestDispositionByMinPercentButton:Hide()
 end
 
 function MissionHelperFrame:disableBestDispositionButton()
-    self.buttonsFrame.BestDispositionButton:Show()
-    self.buttonsFrame.BestDispositionButton:Disable()
+    self.buttonsFrame.BestDispositionByPercentButton:Show()
+    self.buttonsFrame.BestDispositionByPercentButton:Disable()
+    self.buttonsFrame.BestDispositionByMinPercentButton:Show()
+    self.buttonsFrame.BestDispositionByMinPercentButton:Disable()
 end
 
 function MissionHelperFrame:enableBestDispositionButton()
-    self.buttonsFrame.BestDispositionButton:Show()
-    self.buttonsFrame.BestDispositionButton:Enable()
+    self.buttonsFrame.BestDispositionByPercentButton:Show()
+    self.buttonsFrame.BestDispositionByPercentButton:Enable()
+    self.buttonsFrame.BestDispositionByMinPercentButton:Show()
+    self.buttonsFrame.BestDispositionByMinPercentButton:Enable()
 end
 
 function MissionHelperFrame:disablePredictButton()

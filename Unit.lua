@@ -1,6 +1,25 @@
 local CovenantMissionHelper, CMH = ...
 local L = MissionHelper.L
 
+---@class Unit
+---@field ID
+---@field followerGUID
+---@field name
+---@field maxHealth
+---@field currentHealth
+---@field startHealth
+---@field attack
+---@field isAutoTroop
+---@field boardIndex
+---@field role
+---@field tauntedBy
+---@field untargetable
+---@field reflect
+---@field isLoseLvlUp
+---@field isWinLvlUp
+---@field spells
+---@field passive_spell
+---@field buffs
 local Unit = {}
 local EffectTypeEnum, EffectType = CMH.DataTables.EffectTypeEnum, CMH.DataTables.EffectType
 
@@ -47,6 +66,7 @@ function Unit:new(blizzardUnitInfo)
 end
 
 function Unit:getAttackType(autoCombatSpells)
+    if #autoCombatSpells == 0 then return (self.role == 1 or self.role == 5) and 11 or 15 end
     local spellID = autoCombatSpells[1].autoCombatSpellID
     if CMH.DataTables.UnusualAttackType[spellID] ~= nil and CMH.DataTables.UnusualAttackType[spellID][self.ID] ~= nil then
         return CMH.DataTables.UnusualAttackType[spellID][self.ID]
@@ -235,6 +255,7 @@ function Unit:castSpellEffect(targetUnit, effect, spell, isAppliedBuff)
     elseif effect.Effect == EffectTypeEnum.MaxHPMultiplier then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.maxHealth = targetUnit.maxHealth + value
+        targetUnit.currentHealth = math.min(targetUnit.maxHealth, targetUnit.currentHealth + value)
         CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s %s',
             self.name, L[EffectType[effect.Effect]], targetUnit.name, L['for'], value)))
     else

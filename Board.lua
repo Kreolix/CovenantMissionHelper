@@ -7,6 +7,7 @@ local MAX_RANDOM_ROUNDS = 50
 local LVL_UP_ICON = "|TInterface\\petbattles\\battlebar-abilitybadge-strong-small:0|t"
 local SKULL_ICON = "|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:0|t"
 
+---@class Board
 local Board = {Errors = {}, CombatLog = {}, HiddenCombatLog = {}, CombatLogEvents = {}}
 local TargetTypeEnum, EffectTypeEnum = CMH.DataTables.TargetTypeEnum, CMH.DataTables.EffectTypeEnum
 
@@ -380,12 +381,61 @@ function Board:getTotalLostHP(isWin)
     return startHP - restHP
 end
 
+function Board:getTotalRemainingPercentHP(isWin)
+    local restHP = 0
+    local _start, _end, startHP = 0, 4, self.initialAlliesHP
+
+    local followerCount = 0
+    for i = _start, _end do
+        if self.units[i] and self.units[i].isAutoTroop == false then followerCount = followerCount + 1 end
+    end
+
+    if not isWin then _start, _end, startHP = 5, 12, self.initialEnemiesHP end
+    for i = _start, _end do
+        if self.units[i] and (self.units[i].isAutoTroop == false or not isWin) then
+            if self.units[i].isWinLvlUp then
+                restHP = restHP + 1
+            elseif self:isUnitAlive(i) then
+                restHP = restHP + self.units[i].currentHealth/self.units[i].maxHealth
+            end
+        end
+    end
+    return followerCount - restHP
+end
+
+function Board:getMinLostHPPercent(isWin)
+    -- 1 and 2 is 100% and 200% HP. avoid excess calculation
+    local minLostHPPercent = 2
+    if isWin then
+        local _start, _end = 0, 4
+        for i = _start, _end do
+            if self.units[i] and (self.units[i].isAutoTroop == false) and not self.units[i].isWinLvlUp then
+                if self.units[i].currentHealth == 0 then return 1 end
+                minLostHPPercent = min(minLostHPPercent, self.units[i].currentHealth/self.units[i].maxHealth)
+            end
+        end
+        return 1 - minLostHPPercent
+    else
+        local _start, _end = 5, 12
+        for i = _start, _end do
+            if self.units[i] and self:isUnitAlive(i) then
+                minLostHPPercent = min(minLostHPPercent, self.units[i].currentHealth/self.units[i].maxHealth)
+            end
+        end
+        return 1 + minLostHPPercent
+    end
+
+
+end
+
 local function constructString(unit, isWin)
-        local result = unit.name .. L['.'] .. ' ' .. L['HP'] .. ' = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. '\n'
-        --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
-        if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
-        if unit.currentHealth == 0 then result = SKULL_ICON .. result end
-        return '    ' .. result
+    local percentHP = 100
+    if not unit.isWinLvlUp then percentHP = 100 * unit.currentHealth/unit.maxHealth end
+    local result = unit.name .. L['.'] .. ' ' .. L['HP'] .. ' = ' .. unit.currentHealth .. '/' .. unit.maxHealth .. ' (' .. math.floor(percentHP) .. '%)' .. '\n'
+    --result = unit.isWinLvlUp and result .. ' (Level Up)\n' or result .. '\n'
+    if (isWin and unit.isWinLvlUp) or (not isWin and unit.isLoseLvlUp) then result = LVL_UP_ICON .. result end
+    if unit.currentHealth == 0 then result = SKULL_ICON .. result end
+    return '    ' .. result
     end
 
 function Board:getResultInfo()
@@ -402,13 +452,30 @@ function Board:getResultInfo()
             L["Units have random abilities. Actual rest HP may not be the same as predicted"]) or ''
 
     local text = ''
+    local avgPercentHP = 0
+    local minPercentHP = 1
+    local followerCount = 0
+    local currentHealth = 0
     for i = 0, 4 do
         if self.units[i] then
             text = text .. constructString(self.units[i], isWin)
+            if (self:isWin() and self.units[i].isWinLvlUp) or (not self:isWin() and self.units[i].isLoseLvlUp) then
+                currentHealth = self.units[i].maxHealth
+            else
+                currentHealth = self.units[i].currentHealth
+            end
+            if not self.units[i].isAutoTroop then
+                avgPercentHP = avgPercentHP + currentHealth/self.units[i].maxHealth
+                minPercentHP = min(minPercentHP, currentHealth/self.units[i].maxHealth)
+                followerCount = followerCount + 1
+
+            end
         end
     end
     text = string.format("%s\n%s:\n%s \n\n%s %s %s = %s",
             warningText, L['My units'], text, L['TOTAL'], loseOrGain, L['HP'], math.abs(lostHP))
+    text = text .. '\n' .. L['Average HP'].. ' = ' .. math.floor(100 * avgPercentHP/followerCount) .. '%\n'
+            .. L['Minimal HP'].. ' = ' .. math.floor(100 * minPercentHP) .. '%'
 
     if isWin == false then
         local enemyInfo = ''

@@ -21,6 +21,8 @@ L['WIN'] = 'ПОБЕДА'
 L['LOSE'] = 'ПОРАЖЕНИЕ'
 L['Enemy units'] = 'Вражеские отряды'
 L['TOTAL REMAINING HP'] = 'ВСЕГО ОСТАЛОСЬ HP'
+L['Average HP'] = 'Среднее HP'
+L['Minimal HP'] = 'Минимальное HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = 'Базовый опыт'
@@ -52,9 +54,15 @@ L["Simulate mission 100 times to find approximate success rate"] = "Симули
 L['Simulate'] = 'Симуляция'
 L["Change the order of your troops to minimize HP loss"] = "Изменить расположение отрядов для минимизации потерянного здоровья"
 L["It shuffles only units on board and doesn't consider others"] = "Меняет расположение только выставленных отрядов, не учитывает остальные"
+L["Find the disposition with the maximum average left HP as a percentage"] = "Найти расстановку с максимальным среднем оставшимся HP в процентах"
+L["Find the disposition with the maximum of lowest left HP as a percentage"] = "Найти расстановку с максимальным наименьшим оставшимся HP в процентах"
 L["Addon doesn't support "] = "Аддон не поддерживает"
 L['"Optimize" if units have random abilities'] = '"Оптимизировать", если у отрядов есть случайные способности'
 L['Optimize'] = 'Оптимизация'
+L['Optimize by\navg. % HP'] = 'Оптимизация по\nсреднему % HP'
+L["Optimize by\nmin. % HP"] = "Оптимизация по\nмин. % HP"
+L['Optimize\nby avg. HP percent'] = 'Оптимизация по\n среднем процентам HP'
+L['Optimize\nby min. HP percent'] = 'Оптимизация по\n мин. проценту HP юнита'
 L['Result'] = 'Результат'
 L['Combat log'] = 'Журнал боя'
 

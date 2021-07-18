@@ -17,6 +17,8 @@ L['WIN'] = 'WIN'
 L['LOSE'] = 'LOSE'
 L['Enemy units'] = 'Enemy units'
 L['TOTAL REMAINING HP'] = 'TOTAL REMAINING HP'
+L['Average HP'] = 'Average HP'
+L['Minimal HP'] = 'Minimal HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = 'Base XP'
@@ -47,9 +49,13 @@ L["Simulate mission 100 times to find approximate success rate"] = "Simulate mis
 L['Simulate'] = 'Simulate'
 L["Change the order of your troops to minimize HP loss"] = "Change the order of your troops to minimize HP loss"
 L["It shuffles only units on board and doesn't consider others"] = "It shuffles only units on board and doesn't consider others"
+L["Find the disposition with the maximum average left HP as a percentage"] = "Find the disposition with the maximum average left HP as a percentage"
+L["Find the disposition with the maximum of lowest left HP as a percentage"] = "Find the disposition with the maximum of lowest left HP as a percentage"
 L["Addon doesn't support "] = "Addon doesn't support"
 L['"Optimize" if units have random abilities'] = '"Optimize" if units have random abilities'
 L['Optimize'] = 'Optimize'
+L['Optimize by\navg. % HP'] = L['Optimize by\navg. % HP']
+L["Optimize by\nmin. % HP"] = L["Optimize by\nmin. % HP"]
 L['Result'] = 'Result'
 L['Combat log'] = 'Combat log'
 
