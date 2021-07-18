@@ -71,12 +71,12 @@ function MissionHelper:simulateFight(isCalcRandom)
     --]]
 end
 
-function MissionHelper:findBestDisposition()
+function MissionHelper:findBestDisposition(criteriaFunctionID)
     local missionPage = CovenantMissionFrame:GetMissionPage()
     local metaBoard = CMH.MetaBoard:new(missionPage, false)
 
     MissionHelper:clearBoard(missionPage)
-    MissionHelperFrame.board = metaBoard:findBestDisposition()
+    MissionHelperFrame.board = metaBoard:findBestDisposition(criteriaFunctionID)
 
     for _, unit in pairs(MissionHelperFrame.board.units) do
         if unit.boardIndex < 5 then

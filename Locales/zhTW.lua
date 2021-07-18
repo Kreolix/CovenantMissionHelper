@@ -21,6 +21,9 @@ L['WIN'] = '勝利'
 L['LOSE'] = '失敗'
 L['Enemy units'] = '敵方單位'
 L['TOTAL REMAINING HP'] = '總計剩餘生命值'
+-- TODO: translate
+L['Average HP'] = 'Average HP'
+L['Minimal HP'] = 'Minimal HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = '基礎經驗值'

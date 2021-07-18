@@ -22,6 +22,8 @@ L['LOSE'] = '失败'
 L['Enemy units'] = '敌人单位'
 --TODO: translate
 L['TOTAL REMAINING HP'] = 'TOTAL REMAINING HP'
+L['Average HP'] = 'Average HP'
+L['Minimal HP'] = 'Minimal HP'
 
 --CovenantMissionHelper.lua
 L['Base XP'] = '基础经验值'
@@ -52,9 +54,16 @@ L["Simulate mission 100 times to find approximate success rate"] = "模拟100次
 L['Simulate'] = '战斗模拟'
 L["Change the order of your troops to minimize HP loss"] = "优化调整部队的站位，可最大限度的减少生命值损失。"
 L["It shuffles only units on board and doesn't consider others"] = "该操作只考虑指挥台上的部队，不考虑未上场部队。"
+--TODO: translate
+L["Find the disposition with the maximum average left HP as a percentage"] = "Find the disposition with the maximum average left HP as a percentage"
+L["Find the disposition with the maximum of lowest left HP as a percentage"] = "Find the disposition with the maximum of lowest left HP as a percentage"
 L["Addon doesn't support "] = "如果部队拥有随机技能，"
 L['"Optimize" if units have random abilities'] = '则"优化站位"功能不可用'
 L['Optimize'] = '优化站位'
+--TODO: translate
+L['Optimize by\navg. % HP'] = L['Optimize by\navg. % HP']
+L["Optimize by\nmin. % HP"] = L["Optimize by\nmin. % HP"]
+
 L['Result'] = '冒险结果'
 L['Combat log'] = '冒险记录'
 

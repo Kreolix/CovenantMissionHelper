@@ -2,6 +2,11 @@ local CovenantMissionHelper, CMH = ...
 
 local DataTables = {}
 
+DataTables.Criteria = {
+	[0] = "getTotalLostHP",
+	[1] = "getMinLostHPPercent"
+}
+
 DataTables.EffectType = {
     [0] = "for spellID = 17 only",
     [1] = "damage",
@@ -299,7 +304,7 @@ DataTables.LineEnemies = {
 }
 
 -- table GarrAutoSpell, Flags == 1
-DataTables.startsOnCooldownSpells = {2, 68, 84, 85, 118, 139, 144, 152, 158, 163, 172, 181, 186, 228, 244, 247, 250, 254, 282, 285, 296}
+DataTables.startsOnCooldownSpells = {2, 68, 84, 85, 118, 139, 144, 152, 158, 163, 172, 181, 186, 228, 244, 247, 250, 254, 282, 285, 296, 308, 339}
 
 -- Attack type isn't match with unit role
 -- blizzard don't store combatantID in mission info, I try to match combatant by iconID and spellID

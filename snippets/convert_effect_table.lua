@@ -1,4 +1,4 @@
--- 9.1.0.39229
+-- 9.1.0.39335
 local spell_effects = {
   [1]={["ID"]=1,["SpellID"]=1,["EffectIndex"]=0,["Effect"]=1,["Points"]=350,["TargetType"]=24,["Flags"]=1,["Period"]=0},
   [2]={["ID"]=2,["SpellID"]=2,["EffectIndex"]=0,["Effect"]=19,["Points"]=0.2,["TargetType"]=22,["Flags"]=1,["Period"]=2},

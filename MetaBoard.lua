@@ -1,5 +1,6 @@
-CovenantMissionHelper, CMH = ...
-
+local CovenantMissionHelper, CMH = ...
+---@class MetaBoard
+---@field baseBoard Board
 local MetaBoard = {}
 CMH.MetaBoard = MetaBoard
 
@@ -32,6 +33,7 @@ end
 
 local SUBS = get_subs({0, 1, 2, 3, 4})
 
+---@return MetaBoard
 function MetaBoard:new(missionPage, isCalcRandom)
     local newObj = {
         baseBoard = CMH.Board:new(missionPage, isCalcRandom)
@@ -42,14 +44,24 @@ function MetaBoard:new(missionPage, isCalcRandom)
     return newObj
 end
 
-function MetaBoard:findBestDisposition()
-    local bestBoard, bestLostHP = {}, 9999999
+function MetaBoard:findBestDisposition(criteriaFunctionID)
+    criteriaFunctionID = criteriaFunctionID or 0
+    local criteria = 0
+
+    local bestBoard, bestCriteria = {}, 9999999
     for board in self:findBestDispositionIterator() do
         board:simulate()
-        local lostHP = board:getTotalLostHP(board:isWin())
+        if criteriaFunctionID == 0 then
+            criteria = board:getTotalLostHP(board:isWin())
+        elseif criteriaFunctionID == 1 then
+            criteria = board:getTotalRemainingPercentHP(board:isWin())
+        elseif criteriaFunctionID == 2 then
+            criteria = board:getMinLostHPPercent(board:isWin())
+        end
+
         if board:isWin() then
-            if lostHP < bestLostHP then
-                bestLostHP = lostHP
+            if criteria < bestCriteria then
+                bestCriteria = criteria
                 bestBoard = board
             end
         end

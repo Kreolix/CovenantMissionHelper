@@ -1,6 +1,25 @@
 local CovenantMissionHelper, CMH = ...
 local L = MissionHelper.L
 
+---@class Unit
+---@field ID
+---@field followerGUID
+---@field name
+---@field maxHealth
+---@field currentHealth
+---@field startHealth
+---@field attack
+---@field isAutoTroop
+---@field boardIndex
+---@field role
+---@field tauntedBy
+---@field untargetable
+---@field reflect
+---@field isLoseLvlUp
+---@field isWinLvlUp
+---@field spells
+---@field passive_spell
+---@field buffs
 local Unit = {}
 local EffectTypeEnum, EffectType = CMH.DataTables.EffectTypeEnum, CMH.DataTables.EffectType
 
