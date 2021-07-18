@@ -236,6 +236,7 @@ function Unit:castSpellEffect(targetUnit, effect, spell, isAppliedBuff)
     elseif effect.Effect == EffectTypeEnum.MaxHPMultiplier then
         value = self:calculateEffectValue(targetUnit, effect)
         targetUnit.maxHealth = targetUnit.maxHealth + value
+        targetUnit.currentHealth = math.min(targetUnit.maxHealth, targetUnit.currentHealth + value)
         CMH:log(color:WrapTextInColorCode(string.format('%s %s %s %s %s',
             self.name, L[EffectType[effect.Effect]], targetUnit.name, L['for'], value)))
     else
