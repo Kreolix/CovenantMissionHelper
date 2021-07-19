@@ -63,8 +63,8 @@ L['Optimize'] = '最佳化'
 L['Result'] = '冒險結果'
 L['Combat log'] = '冒險記錄'
 --TODO: translate
-L['Optimize by\navg. % HP'] = L['Optimize by\navg. % HP']
-L["Optimize by\nmin. % HP"] = L["Optimize by\nmin. % HP"]
+L['Optimize by\navg. % HP'] = 'Optimize by\navg. % HP'
+L["Optimize by\nmin. % HP"] = "Optimize by\nmin. % HP"
 
 --Unit.lua
 L['Auto Attack'] = '自動攻擊'

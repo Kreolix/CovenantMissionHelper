@@ -61,8 +61,8 @@ L["Addon doesn't support "] = "如果部队拥有随机技能，"
 L['"Optimize" if units have random abilities'] = '则"优化站位"功能不可用'
 L['Optimize'] = '优化站位'
 --TODO: translate
-L['Optimize by\navg. % HP'] = L['Optimize by\navg. % HP']
-L["Optimize by\nmin. % HP"] = L["Optimize by\nmin. % HP"]
+L['Optimize by\navg. % HP'] = 'Optimize by\navg. % HP'
+L["Optimize by\nmin. % HP"] = "Optimize by\nmin. % HP"
 
 L['Result'] = '冒险结果'
 L['Combat log'] = '冒险记录'
