@@ -61,7 +61,7 @@ L['Optimize'] = 'Optimizar'
 L['Optimize by\navg. % HP'] = 'Optimiza por\n% HP prom.'
 L["Optimize by\nmin. % HP"] = "Optimiza por\n% HP mín."
 L['Result'] = 'Resultado'
-L['Combat log'] = 'Registro de combate'
+L['Combat log'] = 'Combat log'
 
 --Unit.lua
 L['Auto Attack'] = 'Auto Ataque'
