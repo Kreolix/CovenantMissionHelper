@@ -54,8 +54,8 @@ L["Find the disposition with the maximum of lowest left HP as a percentage"] = "
 L["Addon doesn't support "] = "Addon doesn't support"
 L['"Optimize" if units have random abilities'] = '"Optimize" if units have random abilities'
 L['Optimize'] = 'Optimize'
-L['Optimize by\navg. % HP'] = L['Optimize by\navg. % HP']
-L["Optimize by\nmin. % HP"] = L["Optimize by\nmin. % HP"]
+L['Optimize by\navg. % HP'] = 'Optimize by\navg. % HP'
+L["Optimize by\nmin. % HP"] = "Optimize by\nmin. % HP"
 L['Result'] = 'Result'
 L['Combat log'] = 'Combat log'
 
