@@ -59,7 +59,9 @@ function Unit:new(blizzardUnitInfo)
 
     self.__index = self
     setmetatable(newObj, self)
-    newObj:setSpells(blizzardUnitInfo.autoCombatSpells)
+    if blizzardUnitInfo.autoCombatSpells and next(blizzardUnitInfo.autoCombatSpells) ~= nil then
+        newObj:setSpells(blizzardUnitInfo.autoCombatSpells)
+    end
 
 
     return newObj
