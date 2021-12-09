@@ -1,4 +1,4 @@
-## Interface: 90100
+## Interface: 90105
 ## Title: Covenant Mission Helper
 ## Title-zhCN: Covenant Mission Helper 冒险任务助手
 ## Author: Kreolix
