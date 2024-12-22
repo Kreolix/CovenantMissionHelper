@@ -93,7 +93,8 @@ local function createResultHeader(mainFrame)
     resultHeader.text = resultHeader:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
         resultHeader.text:SetPoint("CENTER")
         resultHeader.text:SetJustifyH("CENTER")
-        resultHeader.text:SetJustifyV("CENTER")
+        --resultHeader.text:SetJustifyV("CENTER")
+        resultHeader.text:SetJustifyV("MIDDLE")
 
     return resultHeader
 end
@@ -136,7 +137,8 @@ end
 
 local function createScrollBar(mainFrame, combatLogFrame)
     local frame_height = combatLogFrame:GetHeight() - 3*PADDING
-    local scrollBar = CreateFrame("Slider", nil, combatLogFrame, "OribosScrollBarTemplate")
+    --local scrollBar = CreateFrame("Slider", nil, combatLogFrame, "OribosScrollBarTemplate")
+		local scrollBar = CreateFrame("Slider", nil, combatLogFrame, "OribosScrollBar")
     combatLogFrame.CombatLogMessageFrame.ScrollBar = scrollBar
         scrollBar:SetPoint("TOPRIGHT", combatLogFrame, "TOPRIGHT", -SCROLL_BAR_WIDTH, -1.5*PADDING)
         scrollBar:SetSize(SCROLL_BAR_WIDTH, frame_height)
